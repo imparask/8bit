@@ -29,12 +29,11 @@ def home_page(user):
     
     Label(screen2, text="", width='500', height="20", bg=color1).pack() 
     Label(screen2, text="8-BIT ANALYSIS",font=("Calibri", 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
-    Label(screen2, text="", bg='#8EE5EE', width='500', height='75').place(x= 0 , y= 152 )
     Label(screen2, text="Welcome "+user[0][1],font=("Calibri", 15, 'bold'), fg='white', bg=color1).place(x= 1350 , y= 30 )
     Button(screen2, text='Logout', width=7, font=("Open Sans", 11, 'bold'), bg=color3, fg='white', command=screen2.destroy).place(x=1385, y=70)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\data.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
-    label = Label(screen2, image=photo1,bg="#8EE5EE") # attaching image to the label
-    label.place(x=10, y=152)
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
+    label = Label(screen2,borderwidth=0, image=photo1) # attaching image to the label
+    label.place(x=0, y=152)
     Button(screen2, text='Reviews', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg='white').place(x=130, y=175)#, command=reviews
     Button(screen2, text='Trends', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg='white').place(x=600, y=175)#,command=trends
     Button(screen2, text='Stats', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg='white').place(x=1070, y=175)#,command=stats
