@@ -280,7 +280,7 @@ def register_user():
                             connection.commit() # commiting the connection then closing it.
                             connection.close() # closing the connection of the database
                             Label(screen1, text="Registration Successfull", fg="green", font=("calibri", 16,'bold'), width='30', anchor=W,bg=bgcolor_middle).place(x=625, y=590) # printing successful registration message
-                            Button(screen1, text='Proceed To Login', width=20, font=("Open Sans", 18, 'bold'), bg='#FF4040', fg='white',command=screen1.destroy).place(x=625, y=625) # button to navigate back to login page
+                            Button(screen1, text='Proceed To Login', width=20, font=("Open Sans", 18, 'bold'), bg='#FF4040', fg=text_color,command=screen1.destroy).place(x=625, y=625) # button to navigate back to login page
                     else:
                         Label(screen1, text="Password does not match", fg="red", font=("calibri", 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=625, y=590)
                         return
@@ -312,28 +312,27 @@ def register():
     
     Label(screen1, text="", width='500', height="20", bg=color1).pack() 
     Label(screen1, text="8-BIT ANALYSIS",font=("Calibri", 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
-    Label(screen1, text="", bg='black', width='500', height='75').place(x= 0 , y= 152 )
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\welcome.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
-    label = Label(screen1,borderwidth=0, image=photo1,) # attaching image to the label
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\welcome.png") 
+    label = Label(screen1,borderwidth=0, image=photo1,)
     label.place(x=0, y=152)
     Label(screen1, text="", bg=bgcolor_middle,width='100', height='35').place(x= 425 , y= 190 )
-    Label(screen1, text="Sign-Up Form", font=("Calibri", 20, 'bold'),bg=bgcolor_middle, fg='white').place(x=700,y=200)
-    Label(screen1, text="Full Name :", font=("Open Sans", 15, 'bold'), fg='white', bg=bgcolor_middle, anchor=W).place(x=500, y=275)
+    Label(screen1, text="Sign-Up Form", font=("Calibri", 20, 'bold'),bg=bgcolor_middle, fg=text_color).place(x=700,y=200)
+    Label(screen1, text="Full Name :", font=("Open Sans", 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=500, y=275)
     Entry(screen1, textvar=fullname, width=30).place(x=700, y=280)
-    Label(screen1, text="Contact Number :", font=("Open Sans", 15, 'bold'), fg='white', bg=bgcolor_middle, anchor=W).place(x=500, y=315)
+    Label(screen1, text="Contact Number :", font=("Open Sans", 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=500, y=315)
     Entry(screen1, textvar=phoneno,width=30).place(x=700, y=320)
-    Label(screen1, text="Gender :", font=("Open Sans", 15, 'bold'), fg='white', bg=bgcolor_middle, anchor=W).place(x=500, y=365)
+    Label(screen1, text="Gender :", font=("Open Sans", 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=500, y=365)
     Radiobutton(screen1, text="Male",font=("Open Sans", 13), variable=gender, value=1, bg=bgcolor_middle).place(x=700, y=365)
     Radiobutton(screen1, text="Female",font=("Open Sans", 13), variable=gender, value=2, bg=bgcolor_middle).place(x=800, y=365)
-    Label(screen1, text="Email ID :", font=("Open Sans", 15, 'bold'), fg='white', bg=bgcolor_middle, anchor=W).place(x=500, y=405)
+    Label(screen1, text="Email ID :", font=("Open Sans", 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=500, y=405)
     Entry(screen1, textvar=email,width=30).place(x=700, y=410)
-    Label(screen1, text="Password :", font=("Open Sans", 15, 'bold'), fg='white', bg=bgcolor_middle, anchor=W).place(x=500, y=445)
+    Label(screen1, text="Password :", font=("Open Sans", 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=500, y=445)
     Entry(screen1, textvar=password, show="*",width=30).place(x=700, y=450)
-    Label(screen1, text="Confirm Password :", font=("Open Sans", 15, 'bold'), fg='white', bg=bgcolor_middle, anchor=W).place(x=500, y=485)
+    Label(screen1, text="Confirm Password :", font=("Open Sans", 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=500, y=485)
     entry_4 = Entry(screen1, textvar=repassword, show="*",width=30)
     entry_4.place(x=700, y=490)
     Checkbutton(screen1, text="I accept all terms and conditions", variable=tnc, bg=bgcolor_middle, font=("Open Sans", 10, 'bold'), fg='black').place(x=650, y=550)
-    Button(screen1, text='Submit', width=20, font=("Open Sans", 18, 'bold'), bg='#FF4040', fg='white',command=register_user).place(x=625, y=625)
+    Button(screen1, text='Submit', width=20, font=("Open Sans", 18, 'bold'), bg='#FF4040', fg=text_color,command=register_user).place(x=625, y=625)
     screen1.mainloop()
 
 def home_page(user):
@@ -346,18 +345,18 @@ def home_page(user):
     
     Label(screen2, text="", width='500', height="20", bg=color1).pack() 
     Label(screen2, text="8-BIT ANALYSIS",font=("Calibri", 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
-    Label(screen2, text="Welcome "+user[0][1],font=("Calibri", 15, 'bold'), fg='white', bg=color1).place(x= 1350 , y= 30 )
-    Button(screen2, text='Logout', width=7, font=("Open Sans", 11, 'bold'), bg=color3, fg='white', command=screen2.destroy).place(x=1385, y=70)
+    Label(screen2, text="Welcome "+user[0][1],font=("Calibri", 15, 'bold'), fg=text_color, bg=color1).place(x= 1350 , y= 30 )
+    Button(screen2, text='Logout', width=7, font=("Open Sans", 11, 'bold'), bg=color3, fg=text_color, command=screen2.destroy).place(x=1385, y=70)
     photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen2,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
-    Button(screen2, text='Reviews', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg='white').place(x=130, y=175)#, command=reviews
-    Button(screen2, text='Trends', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg='white').place(x=600, y=175)#,command=trends
-    Button(screen2, text='Stats', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg='white',command=stats).place(x=1070, y=175)
+    Button(screen2, text='Reviews', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg=text_color).place(x=130, y=175)#, command=reviews
+    Button(screen2, text='Trends', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg=text_color).place(x=600, y=175)#,command=trends
+    Button(screen2, text='Stats', width=15, font=("Open Sans", 23, 'bold'), bg=color3, fg=text_color,command=stats).place(x=1070, y=175)
     e1=Entry(screen2,textvar=search_item,width=80,font=('Open Sans',20))
     e1.place(x=150,y=450)
     e1.insert(0,'Type Category Name or App Name')
-    Button(screen2, text='Search', width=15, font=("Open Sans", 18, 'bold'), bg="#FF4040", fg='white').place(x=650, y=525)#,command=search
+    Button(screen2, text='Search', width=15, font=("Open Sans", 18, 'bold'), bg="#FF4040", fg=text_color).place(x=650, y=525)#,command=search
     screen2.mainloop()
     
 def login_verify():
@@ -386,18 +385,17 @@ def main_screen():
 
     Label(screen, text="", width="500", height="20", bg=color1).pack()
     Label(screen, text="8-BIT ANALYSIS", font=("Calibri", 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
-    Label(screen, text="", bg='black',width='500', height='75').place(x= 0 , y= 152 )
-    photo = PhotoImage(file="F:\\Python Class\\Project\\welcome.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
-    label = Label(screen,borderwidth=0, image=photo) # attaching image to the label
+    photo = PhotoImage(file="F:\\Python Class\\Project\\welcome.png")
+    label = Label(screen,borderwidth=0, image=photo)
     label.place(x=0, y=152)
     Label(screen, text="", bg=bgcolor_middle,width='70', height='22').place(x= 525 , y= 190 )
-    Label(screen, text="Please enter your login credentials", font=("Calibri", 20, 'bold'),bg=bgcolor_middle, fg='white').place(x=575,y=200)  
-    Label(screen, text="Username :", font=("Open Sans", 15, 'bold'),bg=bgcolor_middle, fg='white').place(x=625,y=295)
+    Label(screen, text="Please enter your login credentials", font=("Calibri", 20, 'bold'),bg=bgcolor_middle, fg=text_color).place(x=575,y=200)  
+    Label(screen, text="Username :", font=("Open Sans", 15, 'bold'),bg=bgcolor_middle, fg=text_color).place(x=625,y=295)
     Entry(screen, textvar=username_verify).place(x=775,y=300)
-    Label(screen, text="Password :", font=("Open Sans", 15, 'bold'), bg=bgcolor_middle, fg='white').place(x=625,y=355)
+    Label(screen, text="Password :", font=("Open Sans", 15, 'bold'), bg=bgcolor_middle, fg=text_color).place(x=625,y=355)
     Entry(screen, textvar=password_verify, show="*").place(x=775,y=360)
-    Button(screen, text="LOGIN", bg="#e79700", width=15, height=1, font=("Open Sans", 13, 'bold'), fg='white', command=login_verify).place(x=700,y=415)
-    Button(screen, text="SIGN-UP", bg="#e79700", width=15, height=1, font=("Open Sans", 13, 'bold'), fg='white', command=register).place(x=700,y=475)
+    Button(screen, text="LOGIN", bg="#e79700", width=15, height=1, font=("Open Sans", 13, 'bold'), fg=text_color, command=login_verify).place(x=700,y=415)
+    Button(screen, text="SIGN-UP", bg="#e79700", width=15, height=1, font=("Open Sans", 13, 'bold'), fg=text_color, command=register).place(x=700,y=475)
     screen.mainloop()
 
 data_wrangling() 
