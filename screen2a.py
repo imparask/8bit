@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import re, pymysql
-import pymysql
+
 import pandas as pd
 import time
 
@@ -145,7 +145,6 @@ def insert_app(entries,x1,y1):
     for e in entries:
         entry.append(str(e.get()))
         
-    print(entry)
     for i in entry:
         if(i==""):
              Label(screen2a, text="Please fill in all the details", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
@@ -174,11 +173,14 @@ def insert_app(entries,x1,y1):
     elif typ == "--select the type--":
         Label(screen2a, text="Please select type", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
         return
-    elif contentrating == "--select the content rating--": # checking for selection of university
+    elif contentrating == "--select the content rating--":
         Label(screen2a, text="Please select content rating", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
         return
-    elif genre == "--select the genre--": # checking for selection of university
+    elif genre == "--select the genre--": 
         Label(screen2a, text="Please select genre", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
+        return
+    elif androidversion == "--select the android version--":
+        Label(screen2a, text="Please select android version", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
         return
     else:
         if(re.match("[0-9](\.[0-9]{0,1}?)?",rating)):
@@ -212,15 +214,21 @@ def insert_app(entries,x1,y1):
                                    or month=='November'):
                                     no_days=30
                                 if(1<day<no_days):
-                                    conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")#,use_unicode=True,charset="utf8"
-                                    cursor = conn.cursor()
-                                    query = "INSERT INTO apps VALUES('"+ appname + "', '"+ categoryname + "', '"+ rating + "', '"+ reviews + "', '"+ size + "', '"+ installs + "', '"+ typ + "', '"+ price + "', '"+ contentrating + "', '"+ genre + "', '"+ lastupdated + "', '"+ currentversion + "', '"+ androidversion + "');"
-                                    #(App,Category,Rating,Reviews,Size,Installs,Type,Price,Content Rating,Genres,Last Updated,Current Ver,Android Ver)
-                                    print(query)
-                                    cursor.execute(query) 
-                                    conn.commit() 
-                                    conn.close()
-                                    Label(screen2a, text="Registration Successfull", fg="green",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)  
+                                    if(re.match("^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$",currentversion)):
+                                        if(currentversion=='0'):
+                                            currentversion='Varies with device'
+                                        conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")#,use_unicode=True,charset="utf8"
+                                        cursor = conn.cursor()
+                                        query = "INSERT INTO apps VALUES('"+ appname + "', '"+ categoryname + "', '"+ rating + "', '"+ reviews + "', '"+ size + "', '"+ installs + "', '"+ typ + "', '"+ price + "', '"+ contentrating + "', '"+ genre + "', '"+ lastupdated + "', '"+ currentversion + "', '"+ androidversion + "');"
+                                        #(App,Category,Rating,Reviews,Size,Installs,Type,Price,Content Rating,Genres,Last Updated,Current Ver,Android Ver)
+                                        
+                                        cursor.execute(query) 
+                                        conn.commit() 
+                                        conn.close()
+                                        Label(screen2a, text="Registration Successfull", fg="green",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)  
+                                    else:
+                                        Label(screen2a, text="Please enter valid current versiom", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
+                                        return    
                                 else:
                                     Label(screen2a, text="Please enter valid day", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
                                     return
@@ -255,6 +263,7 @@ def add_app():
     typ = StringVar()
     cr = StringVar()
     genr = StringVar()
+    andver = StringVar()
     
     screen2a.title("ADD APP")
     adjustWindow(screen2a) # configuring the window
@@ -280,76 +289,84 @@ def add_app():
     
     Label(screen2a, text="Category Name : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+120)
     droplist = OptionMenu(screen2a,cat, *category)
-    droplist.config(font=('Open Sans',12),width=20)
+    droplist.config(font=('Open Sans',12),width=22)
     cat.set('--select the category--')
     droplist.place(x=x1+275, y=y1+125)
     e[1]=cat
     
     Label(screen2a, text="Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+180)
-    e[2]=Entry(screen2a,font=('Open Sans',12),width=20)
+    e[2]=Entry(screen2a,font=('Open Sans',12),width=22)
     e[2].place(x=x1+275, y=y1+185)
     Label(screen2a, text="Eg : 4.1", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+210)
     
     Label(screen2a, text="Reviews : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+240)
-    e[3]=Entry(screen2a,font=('Open Sans',12),width=20)
+    e[3]=Entry(screen2a,font=('Open Sans',12),width=22)
     e[3].place(x=x1+275, y=y1+245)
     Label(screen2a, text="Eg : 10000", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+270)
     
     Label(screen2a, text="Size : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+300)
-    e[4]=Entry(screen2a,font=('Open Sans',12),width=20)
+    e[4]=Entry(screen2a,font=('Open Sans',12),width=22)
     e[4].place(x=x1+275, y=y1+305)
     Label(screen2a, text="Eg : 8.7M (1Mb=1024Kb)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+330)
     
     
     Label(screen2a, text="Installs : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+360)
     droplist = OptionMenu(screen2a,install, *installs)
-    droplist.config(font=('Open Sans',12),width=20)
+    droplist.config(font=('Open Sans',12),width=22)
     install.set('--select number of installs--')
     droplist.place(x=x1+275, y=y1+365)
     e[5]=install
     
     Label(screen2a, text="Type : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+420)
     droplist = OptionMenu(screen2a,typ, *types)
-    droplist.config(font=('Open Sans',12),width=20)
+    droplist.config(font=('Open Sans',12),width=22)
     typ.set('--select the type--')
     droplist.place(x=x1+275, y=y1+425)
     e[6]=typ
     
     Label(screen2a, text="Price : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+480)
-    e[7]=Entry(screen2a,font=('Open Sans',12),width=30)
+    e[7]=Entry(screen2a,font=('Open Sans',12),width=22)
     e[7].place(x=x1+275, y=y1+485)
     Label(screen2a, text="Eg : 100 (in rupees)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+510)
     
     Label(screen2a, text="Content Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+60)
     droplist = OptionMenu(screen2a,cr, *contentrating)
-    droplist.config(font=('Open Sans',12),width=20)
+    droplist.config(font=('Open Sans',12),width=22)
     cr.set('--select the content rating--')
     droplist.place(x=x1+875, y=y1+65)
     e[8]=cr
     
     Label(screen2a, text="Genres : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+125)
     droplist = OptionMenu(screen2a,genr, *genres)
-    droplist.config(font=('Open Sans',12),width=20)
+    droplist.config(font=('Open Sans',12),width=22)
     genr.set('--select the genre--')
     droplist.place(x=x1+875, y=y1+125)
     e[9]=genr
   
     Label(screen2a, text="Last Updated : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+180)
-    e[10]=Entry(screen2a,font=('Open Sans',12),width=20)
+    e[10]=Entry(screen2a,font=('Open Sans',12),width=22)
     e[10].place(x=x1+875, y=y1+185)
     Label(screen2a, text="Eg : November 29, 2017", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+210)
     
     Label(screen2a, text="Current Version : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+240)
-    e[11]=Entry(screen2a,font=('Open Sans',12),width=20)
+    e[11]=Entry(screen2a,font=('Open Sans',12),width=22)
     e[11].place(x=x1+875, y=y1+245)
-    Label(screen2a, text="Eg : 1.0.9", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+270)
+    Label(screen2a, text="Eg : 1.0.9(Note: If version varies with device enter 0)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+750, y=y1+270)
+    
+    android=['Varies with device','1.0','1.1','1.5','1.6','2.0','2.1','2.0.1','2.2','2.3','2.3.1','2.3.2',
+             '2.3.3','2.3.4','2.3.5','2.3.6','2.3.7','3.0','3.1','3.2','4.0.1','4.0.2',
+             '4.0.3','4.0.4','4.1','4.2','4.3','4.4','4.4.1','4.4.2','4.4.3','4.4.4',
+             '5.0','5.1','6.0','7.0','7.1','8.0.0','8.1.0','9.0']
     
     Label(screen2a, text="Android Version : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+300)
-    e[12]=Entry(screen2a,font=('Open Sans',12),width=20)
-    e[12].place(x=x1+875, y=y1+305)
-    Label(screen2a, text="Eg : 2.3 and up", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+330)
+    droplist = OptionMenu(screen2a,andver, *android)
+    droplist.config(font=('Open Sans',12),width=22)
+    andver.set('--select the android version--')
+    droplist.place(x=x1+875, y=y1+305)
+    e[12]=andver
+    Label(screen2a, text="(Note: Select minimum required version)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+340)
     
-    Button(screen2a, text='Submit', width=20, font=(body_font, 18, 'bold'), bg='#FF4040', fg=text_color,command=lambda : insert_app(e,x1,y1)).place(x=x1+800, y=y1+360)
+    Button(screen2a, text='Submit', width=20, font=(body_font, 18, 'bold'), bg='#FF4040', fg=text_color,command=lambda : insert_app(e,x1,y1)).place(x=x1+800, y=y1+380)
     screen2a.mainloop()
 
 data_wrangling()
