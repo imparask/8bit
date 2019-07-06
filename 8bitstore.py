@@ -73,6 +73,8 @@ def data_wrangling():
     apps['Last Updated'] = apps['Last Updated'].str.replace('November','Nov')
     apps['Last Updated'] = apps['Last Updated'].str.replace('December','Dec')
     
+    
+ 
     apps['App'] = apps['App'].str.replace('?','')
     apps['App'] = apps['App'].str.replace('(','')
     apps['App'] = apps['App'].str.replace(')','')
@@ -92,7 +94,11 @@ def data_wrangling():
         x.append(time.strftime("%Y-%m-%d",conv))
 
     apps['Last Updated']=x
-
+    
+    apps['Last Updated'] = pd.to_datetime(apps['Last Updated'])
+    apps['year'] = apps['Last Updated'].dt.year
+    apps['month'] = apps['Last Updated'].dt.month
+    
     #Taking data from database and storing in csv file
     conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
     cursor = conn.cursor()
@@ -167,18 +173,21 @@ def initialise():
         i=i+1 
 
 #TRENDS SECTION STARTS HERE------------------------------------------------
-
+        
 def download_trend(cat,x1,y1):
+    
     cat=str(cat.get()) 
     category_name=apps.loc[apps['Category']==cat]
     #print(category_name)
-    cols=['App','Category','Rating','Reviews','Size','Type','Price','Content Rating','Genres','Current Ver','Android Ver']
+    cols=['App','Category','Rating','Reviews','Size','Type','Price','Content Rating','Genres','Current Ver','Android Ver','year','month']
     category_name.drop(cols,axis=1,inplace=True)
     category_name=category_name.sort_values('Last Updated')
     x=[]
     for i in category_name['Installs']:
-        x.append(int(i)) 
-    category_name['Installs']=x 
+        x.append(int(i))
+    
+    category_name['Installs']=x   
+   
     
     category_name['Last Updated']=pd.to_datetime(category_name['Last Updated'])
     #print(category.dtypes)
@@ -190,32 +199,279 @@ def download_trend(cat,x1,y1):
     
     rcParams['figure.figsize']=6,6
     canvas = FigureCanvasTkAgg(fig, master=screen4)
-    canvas.get_tk_widget().place(x=x1+50,y=y1+80)
+    canvas.get_tk_widget().place(x=x1+50,y=y1+120)
     canvas.draw()
-       
+
+def year_wise_downloads_percentage(x4,y4):
+    
+    year=[2016,2017,2018]
+    list_sum_year=[]
+    sum_per_category=[]
+    total_installs=[]
+    for i in year:
+        total_installs.append(0)
+        list_sum_year.append([])#Double list as per number of years
+        sum_per_category.append(0)
+ 
+    for i in category:
+        for index,row in apps.iterrows():
+            if i==row['Category']:
+                for j in year:
+                    if row['year']==j:
+                        ind=year.index(j)
+                        sum_per_category[ind]=sum_per_category[ind]+int(row['Installs'])
+        for j in range(len(year)):
+            list_sum_year[j].append(sum_per_category[j])
+            sum_per_category[j]=0
+               
+    high_low=[]
+    for i in range(len(year)):
+        high_low.append([])
+        high_low[i].append(min(list_sum_year[i]))
+        high_low[i].append(max(list_sum_year[i]))
+
+    highest_lowest=['LOWEST','HIGHEST']
+
+    yy=20
+    for i in year:
+        ind = year.index(i)
+        for j in highest_lowest:
+            indx = highest_lowest.index(j)
+            value=high_low[ind][indx]
+            Label(screen4, text="Category with {0} downloads in {1}: {2} ({3})".format(j,i,category[list_sum_year[ind].index(value)],value),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=70,anchor=W).place(x=x4+20,y=y4+yy)
+            yy=yy+40
+            #print("Category with {0} downloads in {1}: {2} ({3})".format(j,i,category[list_sum_year[ind].index(value)],value))
+
+
+    for i in range(len(total_installs)):
+        total_installs[i]=sum(list_sum_year[i])
+    
+    yy=yy+20
+    for i in range(len(total_installs)-1):
+        diff = total_installs[i+1]-total_installs[i]
+        inc_dec='INCREASE'
+        if(diff < 0):
+            inc_dec = 'DECREASE'
+        percentage = (diff/total_installs[i])*100
+        Label(screen4, text="Percentage {0} from {1} to {2} : {3}%".format(inc_dec,year[i],year[i+1],round(percentage,2)),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=70,anchor=W).place(x=x4+20,y=y4+yy)
+        yy=yy+40
+        #print('Percentage {0} from {1} to {2} : {3}'.format(inc_dec,year[i],year[i+1],percentage))
+        
+    for i in apps:
+        android_spec=0
+        android_varies=0
+        for index,row in apps.iterrows():
+            if row['Android Ver']=='Varies with device':
+                android_spec=android_spec+int(row['Installs'])
+            else:
+                android_varies=android_varies+int(row['Installs'])   
+    
+    yy=yy+20
+    inc_dec='INCREASE'
+    diff = android_varies-android_spec
+    if(diff < 0):
+        inc_dec='DECREASE'
+    percent = (diff/android_spec)*100
+    Label(screen4, text="Percentage {0} of apps whose Android Version 'Varies With Device' is : {1}% ".format(inc_dec,round(percent,2)),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=70,anchor=W).place(x=x4+20,y=y4+yy)
+    
+    
+def quarter_report(cat):
+    
+    all_years=[2010,2011,2012,2013,2014,2015,2016,2017,2018]
+    all_month=['January-February-March','April-May-June','July-August-September','October-November-December']
+
+    years, months = (len(all_years),len(all_month)) 
+    quarterly_downloads = [[0 for i in range(months)] for j in range(years)] 
+    
+   
+    for i in range(years):
+        year_no=all_years[i]
+        if row['year']==year_no:
+            if row['month']==1 or row['month']==2 or row['month']==3:
+                quarterly_downloads[i][0]+=int(row['Installs'])
+            elif row['month']==4 or row['month']==5 or row['month']==6:
+                quarterly_downloads[i][1]+=int(row['Installs'])
+            elif row['month']==7 or row['month']==8 or row['month']==9:
+                quarterly_downloads[i][2]+=int(row['Installs'])
+            elif row['month']==10 or row['month']==11 or row['month']==12:
+                quarterly_downloads[i][3]+=int(row['Installs'])
+
+    
+    max_month_downloads=list(map(max, quarterly_downloads))
+    print(max_month_downloads)
+    year_var=2010
+    for i in range(years):
+        print("YEAR:",year_var)
+        year_var+=1
+        for j in range(months):
+            if max_month_downloads[i]==quarterly_downloads[i][j]:
+                print("QUARTER SPAN:",all_month[j])
+
+
+def ratio_content_rating(one,two,x3,y3):
+    
+    one = str(one.get())
+    two = str(two.get())
+   
+    if(one=='--Select 1st Content Rating--' or two=='--Select 2nd Content Rating--'):
+        Label(screen4, text="Please select both content ratings..!!".format(one,two,ratio),font=(body_font, 12, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x3+20,y=y3+40)
+        return
+    one_downloads=0
+    two_downloads=0#since 0 by 0 gives a division error
+    try:
+        for i in apps:
+            for index,row in apps.iterrows():
+                if row['Content Rating'] == one:
+                    one_downloads+=int(row['Installs'])
+                if row['Content Rating'] == two:
+                    two_downloads+=int(row['Installs'])
+        
+        ratio = round(one_downloads/two_downloads,2)
+        print(ratio)
+        Label(screen4, text="Ratio of downloads is {2}".format(one,two,ratio),font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x3+60,y=y3+70)
+
+    except ZeroDivisionError:
+        return
+
+    #print("Ratio of downloads of teen to mature is :",ratio)
+
+
+def category_best_month(cat,x2,y2):
+    
+    all_years=[2010,2011,2012,2013,2014,2015,2016,2017,2018]
+    all_month=['January','February','March','April','May','June','July','August','September','October','November','December']
+
+    years, months = (len(all_years), len(all_month)) 
+    monthly_downloads = [[0 for i in range(months)] for j in range(years)] 
+   
+    i=str(cat.get())
+    Label(screen4, text=i,font=(body_font, 12, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+80)
+
+    monthly_downloads = [[0 for i in range(months)] for j in range(years)] 
+    for index,row in apps.iterrows():
+        if i==row['Category']:
+            if row['year']==2010:
+                j=0
+            elif row['year']==2011:
+                j=1
+            elif row['year']==2012:
+                j=2
+            elif row['year']==2013:
+                j=3
+            elif row['year']==2014:
+                j=4
+            elif row['year']==2015:
+                j=5
+            elif row['year']==2016:
+                j=6
+            elif row['year']==2017:
+                j=7
+            elif row['year']==2018:
+                j=8    
+            if row['month']==1:
+                monthly_downloads[j][0]+=int(row['Installs'])
+            elif row['month']==2:
+                monthly_downloads[j][1]+=int(row['Installs'])
+            elif row['month']==3:
+                monthly_downloads[j][2]+=int(row['Installs'])
+            elif row['month']==4:
+                monthly_downloads[j][3]+=int(row['Installs'])
+            elif row['month']==5:
+                monthly_downloads[j][4]+=int(row['Installs'])
+            elif row['month']==6:
+                monthly_downloads[j][5]+=int(row['Installs'])
+            elif row['month']==7:
+                monthly_downloads[j][6]+=int(row['Installs'])
+            elif row['month']==8:
+                monthly_downloads[j][7]+=int(row['Installs'])
+            elif row['month']==9:
+                monthly_downloads[j][8]+=int(row['Installs'])
+            elif row['month']==10:
+                monthly_downloads[j][9]+=int(row['Installs'])
+            elif row['month']==11:
+                monthly_downloads[j][10]+=int(row['Installs'])
+            elif row['month']==12:
+                monthly_downloads[j][11]+=int(row['Installs'])        
+
+    #print(list(map(max, monthly_downloads)))
+    max_month_category=max(map(max, monthly_downloads))
+    print(max_month_category)
+    max_element_category=[(ix,iy) for ix, row in enumerate(monthly_downloads) for iy, i in enumerate(row) if i == max_month_category]
+    for i in range(9):
+        if max_element_category[0][0]==i:
+            y = all_years[i]
+            for j in range(12):
+                if max_element_category[0][1]==j:
+                    Label(screen4, text=str(all_month[j])+" ("+str(y)+")\n"+str(max_month_category),font=(body_font, 12, 'bold'), fg=text_color, bg=bgcolor_middle,width=15,anchor=W).place(x=x2+260,y=y2+80)
+
+                    
 def trends():
     global screen4,cat
+    
     screen4=Toplevel(screen)
     cat=StringVar()
+    cat1=StringVar()
+    cr1=StringVar()
+    cr2=StringVar()
     adjustWindow(screen4)
     screen4.title("TRENDS")
     
     Label(screen4, text="", width='500', height="20", bg=color1).pack() 
     Label(screen4, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=475,y=10)
     Button(screen4, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4.destroy).place(x=1380, y=55)
+    Label(screen4, text="PAGE 1",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1350,y=100)
+    Button(screen4, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color).place(x=1430, y=100)#, command=trends1
     photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen4,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
     
-    #SECTION 1
+    #Section 1
     x1=30# Change these parameters 
     y1=170# to shift the whole below section
-    Label(screen4, text="", width=76, height=35, bg=bgcolor_middle).place(x=x1,y=y1)
+    Label(screen4, text="", width=76, height=40, bg=bgcolor_middle).place(x=x1,y=y1)
     Label(screen4, text="Download Trends",font=(body_font, 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+145,y=y1+5)
     droplist = OptionMenu(screen4, cat, *category,command=lambda x : download_trend(cat,x1,y1))
-    droplist.config(font=('Open Sans',10),width=30)
+    droplist.config(font=(body_font,10),width=30)
     cat.set('--Select a Category--')
     droplist.place(x=x1+140, y=y1+45) 
+    
+    #Section 2
+    x2=590
+    y2=170
+    Label(screen4, text="", width=62, height=8, bg=bgcolor_middle).place(x=x2,y=y2)
+    droplist = OptionMenu(screen4, cat1, *category,command=lambda x : category_best_month(cat1,x2,y2))
+    droplist.config(font=(body_font,10),width=30)
+    cat1.set('--Select a Category--')
+    droplist.place(x=x2+100, y=y2+10) 
+    Label(screen4, text="Category",font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+50)
+    Label(screen4, text="BEST MONTH",font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+260,y=y2+50)
+    
+    #Section 3
+    x3=1050
+    y3=170
+    Label(screen4, text="", width=62, height=8, bg=bgcolor_middle).place(x=x3,y=y3)
+    droplist = OptionMenu(screen4, cr1, *contentrating)
+    droplist.config(font=(body_font,10),width=22)
+    cr1.set('--Select 1st Content Rating--')
+    droplist.place(x=x3+10, y=y3+10)
+    
+    Label(screen4, text="/",font=(body_font, 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x3+215,y=y3+10)
+
+    droplist = OptionMenu(screen4, cr2, *contentrating,command=lambda x : ratio_content_rating(cr1,cr2,x3,y3))
+    droplist.config(font=(body_font,10),width=22)
+    cr2.set('--Select 2nd Content Rating--')
+    droplist.place(x=x3+230, y=y3+10)
+    
+    
+    #Section 4
+    x4=590# Change these parameters 
+    y4=320# to shift the whole below section
+    Label(screen4, text="", width=128, height=30, bg=bgcolor_middle).place(x=x4,y=y4)
+    Button(screen4, text="LOAD DATA", bg="#e79700", width=10, font=(body_font, 10, 'bold'), fg=text_color, command=lambda : year_wise_downloads_percentage(x4,y4)).place(x=x4+20,y=y4+20)
+
+    
+    #Label(screen4, text="",font=("Open Sans", 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+145,y=y1+5)
+    
     screen4.mainloop()
 
 #TRENDS SECTION ENDS HERE----------------------------------------------
@@ -676,7 +932,7 @@ def insert_app(entries,x1,y1):
             Label(screen2a, text="Please enter valid rating", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
             return    
                                     
-def add_app():
+def add_app(apprecord):
     global screen2a
     
     screen2a = Toplevel(screen2)
@@ -703,109 +959,144 @@ def add_app():
         
     x1=150
     y1=190
-    Label(screen2a, text="", bg=bgcolor_middle,width='170', height='37').place(x= x1 , y= y1 )
-    Label(screen2a, text="App Form", font=(title_font, 23, 'bold'),bg=bgcolor_middle, fg=text_color).place(x=x1+550,y=y1+5)
-    Label(screen2a, text="App Name :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+60)
-    e[0]=Entry(screen2a,font=('Open Sans',12), width=30)
-    e[0].place(x=x1+275, y=y1+65)
     
-    Label(screen2a, text="Category Name : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+120)
-    droplist = OptionMenu(screen2a,cat, *category)
-    droplist.config(font=('Open Sans',12),width=22)
-    cat.set('--select the category--')
-    droplist.place(x=x1+275, y=y1+125)
-    e[1]=cat
+    for i in apprecord:
+        Label(screen2a, text="", bg=bgcolor_middle,width='170', height='37').place(x= x1 , y= y1 )
+        Label(screen2a, text="App Form", font=(title_font, 23, 'bold'),bg=bgcolor_middle, fg=text_color).place(x=x1+550,y=y1+5)
+        Label(screen2a, text="App Name :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+60)
+        e[0]=Entry(screen2a,font=('Open Sans',12), width=30)
+        e[0].place(x=x1+275, y=y1+65)
+        e[0].insert(0,i[0])
     
-    Label(screen2a, text="Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+180)
-    e[2]=Entry(screen2a,font=('Open Sans',12),width=22)
-    e[2].place(x=x1+275, y=y1+185)
-    Label(screen2a, text="Eg : 4.1", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+210)
+        Label(screen2a, text="Category Name : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+120)
+        droplist = OptionMenu(screen2a,cat, *category)
+        droplist.config(font=('Open Sans',12),width=22)
+        if(i[1]==""):
+            cat.set('--select the category--')
+        else:
+            cat.set(i[1])
+        droplist.place(x=x1+275, y=y1+125)
+        e[1]=cat
     
-    Label(screen2a, text="Reviews : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+240)
-    e[3]=Entry(screen2a,font=('Open Sans',12),width=22)
-    e[3].place(x=x1+275, y=y1+245)
-    Label(screen2a, text="Eg : 10000", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+270)
+        Label(screen2a, text="Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+180)
+        e[2]=Entry(screen2a,font=('Open Sans',12),width=22)
+        e[2].place(x=x1+275, y=y1+185)
+        Label(screen2a, text="Eg : 4.1", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+210)
+        e[2].insert(0,i[2])
+        
+        Label(screen2a, text="Reviews : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+240)
+        e[3]=Entry(screen2a,font=('Open Sans',12),width=22)
+        e[3].place(x=x1+275, y=y1+245)
+        Label(screen2a, text="Eg : 10000", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+270)
+        e[3].insert(0,i[3])
+        
+        Label(screen2a, text="Size : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+300)
+        e[4]=Entry(screen2a,font=('Open Sans',12),width=22)
+        e[4].place(x=x1+275, y=y1+305)
+        Label(screen2a, text="Eg : 8.7M (1Mb=1024Kb)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+330)
+        e[4].insert(0,i[4])
     
-    Label(screen2a, text="Size : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+300)
-    e[4]=Entry(screen2a,font=('Open Sans',12),width=22)
-    e[4].place(x=x1+275, y=y1+305)
-    Label(screen2a, text="Eg : 8.7M (1Mb=1024Kb)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+330)
+        Label(screen2a, text="Installs : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+360)
+        droplist = OptionMenu(screen2a,install, *installs)
+        droplist.config(font=('Open Sans',12),width=22)
+        if(i[5]==""):
+            install.set('--select number of installs--')
+        else:
+            install.set(i[5])
+        droplist.place(x=x1+275, y=y1+365)
+        e[5]=install
+        
+        Label(screen2a, text="Type : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+420)
+        droplist = OptionMenu(screen2a,typ, *types)
+        droplist.config(font=('Open Sans',12),width=22)
+        if(i[6]==""):
+            typ.set('--select the type--')
+        else:
+            typ.set(i[6])
+        droplist.place(x=x1+275, y=y1+425)
+        e[6]=typ
     
+        Label(screen2a, text="Price : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+480)
+        e[7]=Entry(screen2a,font=('Open Sans',12),width=22)
+        e[7].place(x=x1+275, y=y1+485)
+        Label(screen2a, text="Eg : 100 (in rupees)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+510)
+        e[7].insert(0,i[7])
+        
+        Label(screen2a, text="Content Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+60)
+        droplist = OptionMenu(screen2a,cr, *contentrating)
+        droplist.config(font=('Open Sans',12),width=22)
+        if(i[8]==""):
+            cr.set('--select the content rating--')
+        else:
+            cr.set(i[8])
+        droplist.place(x=x1+875, y=y1+65)
+        e[8]=cr
     
-    Label(screen2a, text="Installs : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+360)
-    droplist = OptionMenu(screen2a,install, *installs)
-    droplist.config(font=('Open Sans',12),width=22)
-    install.set('--select number of installs--')
-    droplist.place(x=x1+275, y=y1+365)
-    e[5]=install
-    
-    Label(screen2a, text="Type : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+420)
-    droplist = OptionMenu(screen2a,typ, *types)
-    droplist.config(font=('Open Sans',12),width=22)
-    typ.set('--select the type--')
-    droplist.place(x=x1+275, y=y1+425)
-    e[6]=typ
-    
-    Label(screen2a, text="Price : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+480)
-    e[7]=Entry(screen2a,font=('Open Sans',12),width=22)
-    e[7].place(x=x1+275, y=y1+485)
-    Label(screen2a, text="Eg : 100 (in rupees)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+510)
-    
-    Label(screen2a, text="Content Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+60)
-    droplist = OptionMenu(screen2a,cr, *contentrating)
-    droplist.config(font=('Open Sans',12),width=22)
-    cr.set('--select the content rating--')
-    droplist.place(x=x1+875, y=y1+65)
-    e[8]=cr
-    
-    Label(screen2a, text="Genres : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+125)
-    droplist = OptionMenu(screen2a,genr, *genres)
-    droplist.config(font=('Open Sans',12),width=22)
-    genr.set('--select the genre--')
-    droplist.place(x=x1+875, y=y1+125)
-    e[9]=genr
+        Label(screen2a, text="Genres : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+125)
+        droplist = OptionMenu(screen2a,genr, *genres)
+        droplist.config(font=('Open Sans',12),width=22)
+        if(i[9]==""):
+            genr.set('--select the genre--')
+        else:
+            genr.set(i[9])
+        droplist.place(x=x1+875, y=y1+125)
+        e[9]=genr
   
-    Label(screen2a, text="Last Updated : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+180)
-    e[10]=Entry(screen2a,font=('Open Sans',12),width=22)
-    e[10].place(x=x1+875, y=y1+185)
-    Label(screen2a, text="Eg : November 29, 2017", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+210)
-    
-    Label(screen2a, text="Current Version : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+240)
-    e[11]=Entry(screen2a,font=('Open Sans',12),width=22)
-    e[11].place(x=x1+875, y=y1+245)
-    Label(screen2a, text="Eg : 1.0.9(Note: If version varies with device enter 0)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+750, y=y1+270)
-    
-    android=['Varies with device','1.0','1.1','1.5','1.6','2.0','2.1','2.0.1','2.2','2.3','2.3.1','2.3.2',
+        Label(screen2a, text="Last Updated : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+180)
+        e[10]=Entry(screen2a,font=('Open Sans',12),width=22)
+        e[10].place(x=x1+875, y=y1+185)
+        Label(screen2a, text="Eg : November 29, 2017", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+210)
+        e[10].insert(0,i[10])
+        
+        Label(screen2a, text="Current Version : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+240)
+        e[11]=Entry(screen2a,font=('Open Sans',12),width=22)
+        e[11].place(x=x1+875, y=y1+245)
+        Label(screen2a, text="Eg : 1.0.9(Note: If version varies with device enter 0)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+750, y=y1+270)
+        e[11].insert(0,i[11])
+        
+        android=['Varies with device','1.0','1.1','1.5','1.6','2.0','2.1','2.0.1','2.2','2.3','2.3.1','2.3.2',
              '2.3.3','2.3.4','2.3.5','2.3.6','2.3.7','3.0','3.1','3.2','4.0.1','4.0.2',
              '4.0.3','4.0.4','4.1','4.2','4.3','4.4','4.4.1','4.4.2','4.4.3','4.4.4',
              '5.0','5.1','6.0','7.0','7.1','8.0.0','8.1.0','9.0']
     
-    Label(screen2a, text="Android Version : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+300)
-    droplist = OptionMenu(screen2a,andver, *android)
-    droplist.config(font=('Open Sans',12),width=22)
-    andver.set('--select the android version--')
-    droplist.place(x=x1+875, y=y1+305)
-    e[12]=andver
-    Label(screen2a, text="(Note: Select minimum required version)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+340)
-    
+        Label(screen2a, text="Android Version : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+300)
+        droplist = OptionMenu(screen2a,andver, *android)
+        droplist.config(font=('Open Sans',12),width=22)
+        if(i[12]==""):
+            andver.set('--select the android version--')
+        else:
+            andver.set(i[12])
+        droplist.place(x=x1+875, y=y1+305)
+        e[12]=andver
+        Label(screen2a, text="(Note: Select minimum required version)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+340)
+        break
+            
     Button(screen2a, text='Submit', width=20, font=(body_font, 18, 'bold'), bg='#FF4040', fg=text_color,command=lambda : insert_app(e,x1,y1)).place(x=x1+800, y=y1+380)
     screen2a.mainloop()
 
+def delete_app(appname,x2,y2):
+    conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
+    cursor = conn.cursor()
+    query = "DELETE from apps WHERE App='"+appname+"'"
+    cursor.execute(query)    
+    conn.commit() # commiting the connection then closing it.
+    conn.close() # closing the connection of the database
+    Label(screen2, text="App Deleted",font=(title_font, 14, 'bold'), fg='green', bg=bgcolor_middle,width=20,anchor=W).place(x=x2+360,y=y2+330)  
+          
 def search(x2,y2,search_item):
     conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
     cursor = conn.cursor()
     query = "SELECT * from apps WHERE App='"+search_item+"'"
     cursor.execute(query) # executing the queries
-    app_record = cursor.fetchall()
-
-    x2=700
-    y2=350
+    apprecord = cursor.fetchall()        
+    conn.commit() # commiting the connection then closing it.
+    conn.close() # closing the connection of the database
     
-    if(len(app_record)==0):
+    if(len(apprecord)==0):
         Label(screen2, text="App doesnt not exist",font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+50)
         return
     
-    for i in app_record:
+    for i in apprecord:
             Label(screen2, text="App Name : "+i[0],font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+50)    
             Label(screen2, text="Category Name : "+i[1],font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+90)
             Label(screen2, text="Rating : "+i[2],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+130)  
@@ -819,11 +1110,11 @@ def search(x2,y2,search_item):
             Label(screen2, text="Last Updated : "+i[10],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=30,anchor=W).place(x=x2+300,y=y2+210)
             Label(screen2, text="Current Version : "+i[11],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+250)
             Label(screen2, text="Android Version : "+i[12],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+290)
+            Button(screen2, text='Delete', width=12, font=(body_font, 13, 'bold'), bg='#FF4040', fg=text_color,command=lambda : delete_app(i[0],x2,y2)).place(x=x2+350, y=y2+20)
+            Button(screen2, text='Update', width=12, font=(body_font, 13, 'bold'), bg='#e79700', fg=text_color,command=lambda : add_app(apprecord)).place(x=x2+550, y=y2+20)
+
             break#Incase of multiple values it will only show the details of the first value
-       
-            
-    conn.commit() # commiting the connection then closing it.
-    conn.close() # closing the connection of the database
+     
              
 def home_page(user):
     global screen2
@@ -857,8 +1148,14 @@ def home_page(user):
     e1.place(x=x1+20,y=y1+50)
     e1.insert(0,'Type an App Name')
     
+    apprecord=[]
+    for i in range(2):
+        apprecord.append([])
+        for j in range(13):
+            apprecord[i].append("")#for passing a parameter to add_app function
+            
     Button(screen2, text='Search', width=12, font=(body_font, 13, 'bold'), bg="#FF4040", fg=text_color,command=lambda : search(x2,y2,e1.get())).place(x=x1+170, y=y1+100)
-    Button(screen2, text='Add App', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=add_app).place(x=x1+50, y=y1+200)
+    Button(screen2, text='Add App', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=lambda : add_app(apprecord)).place(x=x1+50, y=y1+200)
     Button(screen2, text='Add Review', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=add_review).place(x=x1+250, y=y1+200)
     
     #Search Results Section
