@@ -132,7 +132,8 @@ def initialise():
     category=[]
     for i in cat['Category']:
         category.append(i)
-        
+    category=category.sort()
+    
     inst = apps.drop_duplicates(subset='Installs', keep='first')
     installs=[]
     for i in inst['Installs']:
@@ -150,6 +151,7 @@ def initialise():
     genres=[]
     for i in genr['Genres']:
         genres.append(i)
+    genres=genres.sort()
         
     contrat = apps.drop_duplicates(subset='Content Rating', keep='first')
     contentrating=[]
@@ -170,10 +172,390 @@ def initialise():
     i=0
     while(i<len(category)):
         cat_inst[category[i]]=installs_sum[i]
-        i=i+1 
+        i=i+1
 
+       
 #TRENDS SECTION STARTS HERE------------------------------------------------
+
+#TRENDS1 SECTION STARTS HERE---------------------------------------------------
+from tkinter import *
+from tkinter import messagebox
+import re, pymysql
+import numpy as np 
+import pandas as pd 
+import time
+from datetime import date
+from pylab import rcParams
+from textblob import TextBlob
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+#from matplotlib.figure import Figure
+
+matplotlib.rcParams['axes.labelsize']=14
+matplotlib.rcParams['xtick.labelsize']=12
+matplotlib.rcParams['ytick.labelsize']=12
+matplotlib.rcParams['text.color']='k'
+
+import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
+
+import statsmodels.api as sm
+#import seaborn as sns
+#from warnings import simplefilter
+
+#Choose theme of window
+color1 ='#CD3333'#TITLE COLOR
+bgcolor_middle = '#5F9EA0'#BODY COLOR
+color3 = '#00C957'#Button Color
+text_color ='white'
+
+#Fonts
+title_font="Calibri"
+body_font="Open Sans"
+
+
+def adjustWindow(window):
+    ws = window.winfo_screenwidth() # width of the screen
+    hs = window.winfo_screenheight() # height of the screen
+    w = ws # width for the window size
+    h = hs# height for the window size
+    x = (ws/2) - (w/2) # calculate x and y coordinates for the Tk window
+    y = (hs/2) - (h/2)
+    window.geometry('%dx%d+%d+%d' % (w-15, h-40, x, y)) # set the dimensions of the screen and where it is placed
+    window.resizable(False, False) # disabling the resize option for the window
+    window.configure(background='white')
+
+def data_wrangling():
+    global apps,review
+    #DATA WRANGLING
+    #Taking data from database and storing in csv file
+    conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
+    cursor = conn.cursor()
+    query = "Select * from apps"
+    results = pd.read_sql_query(query,conn)
+    results.to_csv('F:\\Python Class\\Project\\apps.csv',index=False)
+    conn.commit()
+    conn.close()
+
+    #Data wrangling of apps
+    apps=pd.read_csv('F:\\Python Class\\Project\\apps.csv',encoding = "ISO-8859-1")
+    
+    apps['Last Updated'] = apps['Last Updated'].str.replace(',','')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('January','Jan')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('February','Feb')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('March','Mar')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('April','Apr')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('May','May')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('June','Jun')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('July','Jul')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('August','Aug')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('September','Sep')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('October','Oct')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('November','Nov')
+    apps['Last Updated'] = apps['Last Updated'].str.replace('December','Dec')
+    
+    
+ 
+    apps['App'] = apps['App'].str.replace('?','')
+    apps['App'] = apps['App'].str.replace('(','')
+    apps['App'] = apps['App'].str.replace(')','')
+    apps=apps.drop([3750,6333,9306,10472],axis=0)
+
+    apps=apps[apps.Rating.notnull()]
+    
+    apps['Installs'] = apps['Installs'].str.replace(',','')
+    apps['Installs'] = apps['Installs'].str.replace('+','')
+    
+    date=apps['Last Updated']
+    d=date.values.tolist()  #temp variable
+    
+    x=[]     #temp variable
+    for i in d:
+        conv=time.strptime(i,"%b %d %Y")
+        x.append(time.strftime("%Y-%m-%d",conv))
+
+    apps['Last Updated']=x
+    
+    apps['Last Updated'] = pd.to_datetime(apps['Last Updated'])
+    apps['year'] = apps['Last Updated'].dt.year
+    apps['month'] = apps['Last Updated'].dt.month
+    
+    #Taking data from database and storing in csv file
+    conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
+    cursor = conn.cursor()
+    query = "Select * from reviews"
+    results = pd.read_sql_query(query,conn)
+    results.to_csv('F:\\Python Class\\Project\\review.csv',index=False)
+    conn.commit()
+    conn.close()
+
+    #Data wrangling of reviews
+    review=pd.read_csv('F:\\Python Class\\Project\\review.csv',encoding = "ISO-8859-1")
+
+    for i in range(200,240):
+        review=review.drop([i],axis=0)
+
+    for i in range(1020,1098):
+        review=review.drop([i],axis=0)
+    
+    for i in range(33545,33585):
+        review=review.drop([i],axis=0)
+       
+    for i in range(51024,51064):
+        review=review.drop([i],axis=0)
+
+    review=review[review.Translated_Review.notnull()]
         
+def initialise():
+    global cat_inst,category,installs_sum,installs,types,genres,contentrating
+    
+    cat_inst={}
+    cat = apps.drop_duplicates(subset='Category', keep='first')
+    category=[]
+    for i in cat['Category']:
+        category.append(i)
+    category.sort()
+    
+    inst = apps.drop_duplicates(subset='Installs', keep='first')
+    installs=[]
+    for i in inst['Installs']:
+        installs.append(int(i))
+    installs.sort()
+    for i in range(0,len(installs)):
+        installs[i]=str(installs[i])
+    
+    typ = apps.drop_duplicates(subset='Type', keep='first')
+    types=[]
+    for i in typ['Type']:
+        types.append(i)
+        
+    genr = apps.drop_duplicates(subset='Genres', keep='first')
+    genres=[]
+    for i in genr['Genres']:
+        genres.append(i)
+    genres.sort()
+        
+    contrat = apps.drop_duplicates(subset='Content Rating', keep='first')
+    contentrating=[]
+    for i in contrat['Content Rating']:
+        contentrating.append(i)
+        
+    installs_sum=[]
+    for i in category:
+        sum=0
+        for index,row in apps.iterrows():
+            if i==row['Category']:
+                sum=sum+int(row['Installs'])
+        installs_sum.append(sum)
+    total_sum=0
+    for i in  installs_sum:
+        total_sum=total_sum+i
+    
+    i=0
+    while(i<len(category)):
+        cat_inst[category[i]]=installs_sum[i]
+        i=i+1
+
+
+def quarter_report():
+    x1=40
+    y1=180
+    all_years=[2010,2011,2012,2013,2014,2015,2016,2017,2018]
+    all_month=['January-February-March','April-May-June','July-August-September','October-November-December']
+
+    years, months = (len(all_years),len(all_month)) 
+    quarterly_downloads = [[0 for i in range(months)] for j in range(years)] 
+    
+    for index,row in apps.iterrows(): 
+        year_no=all_years[0]
+        for i in range(years): 
+            if row['year']==year_no:
+                if row['month']==1 or row['month']==2 or row['month']==3:
+                    quarterly_downloads[i][0]+=int(row['Installs'])
+                elif row['month']==4 or row['month']==5 or row['month']==6:
+                    quarterly_downloads[i][1]+=int(row['Installs'])
+                elif row['month']==7 or row['month']==8 or row['month']==9:
+                    quarterly_downloads[i][2]+=int(row['Installs'])
+                elif row['month']==10 or row['month']==11 or row['month']==12:
+                    quarterly_downloads[i][3]+=int(row['Installs'])
+            year_no+=1
+
+    
+    max_month_downloads=list(map(max, quarterly_downloads))
+    yy=50
+    year_var=all_years[0]
+    for i in range(years):
+        Label(screen4a, text=year_var,font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+50,y=y1+yy)
+        year_var+=1
+        for j in range(months):
+            if max_month_downloads[i]==quarterly_downloads[i][j]:
+                Label(screen4a, text=all_month[j],font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+150,y=y1+yy)
+                Label(screen4a, text=max_month_downloads[i],font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+460,y=y1+yy)
+                yy+=60
+
+
+def downloads_n_ratings(noi,rt,x2,y2):
+ 
+    lessdownloadsmoreratings=0
+    moredownloadslessratings=0
+    moredownloadsmoreratings=0
+    lessdownloadslessratings=0
+    
+    rt = str(rt.get())
+    noi = str(noi.get())
+    
+    if(noi=="" or rt==""):
+         Label(screen4a, text="Please fill all details",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W,).place(x=x2+550,y=y2+70)
+         return
+    if(re.match("^\d+(\.\d{0,1})?$",rt)):
+        if(re.match("^[0-9]*$",noi)):
+            rt = float(rt)
+            for index,row in apps.iterrows():
+                if row['Installs'] >= noi:
+                    if row['Rating']>=rt:
+                        moredownloadsmoreratings+=1
+                    else:
+                        moredownloadslessratings+=1
+                elif row['Installs'] < noi:
+                    if row['Rating']>=rt:
+                        lessdownloadsmoreratings+=1 
+                    else:
+                        lessdownloadslessratings+=1 
+
+            Label(screen4a, text="More than {0} downloads and rating above {1} : {2}".format(noi,rt,moredownloadsmoreratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+100)
+            Label(screen4a, text="More than {0} downloads and rating below {1} : {2}".format(noi,rt,moredownloadslessratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+140)
+            Label(screen4a, text="Less than {0} downloads and rating above {1} : {2}".format(noi,rt,lessdownloadsmoreratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+180)
+            Label(screen4a, text="Less than {0} downloads and rating below {1} : {2}".format(noi,rt,lessdownloadslessratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+220)
+            Label(screen4a, text="",width=29,font=(body_font, 11, 'bold'), bg=bgcolor_middle).place(x=x2+500,y=y2+70)
+            return  
+        else:
+            Label(screen4a, text="Enter Valid Number of installs",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W,).place(x=x2+550,y=y2+70)
+            return  
+    else:
+        Label(screen4a, text="Enter Valid Rating",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W).place(x=x2+550,y=y2+70)
+        return
+
+def compare_prediction(category1,cat,x3,y3):
+    
+    cat = str(cat.get())
+    
+    year2017_total=[]
+    year2018_total=[]
+    perc_incre=[]
+    
+    for i in category1:
+        total17=0
+        total18=0 
+        for index,row in apps.iterrows():
+            if i==row['Category']:
+                if row['year']==2017:
+                    total17+=int(row['Installs'])
+                elif row['year']==2018:
+                    total18+=int(row['Installs'])
+        year2017_total.append(total17)
+        year2018_total.append(total18)
+    
+
+    for i in range(len(category1)):
+        perc_incre.append(round(((year2018_total[i]-year2017_total[i])/year2017_total[i])*100,2))
+    
+    ind = category1.index(cat)
+    percent = perc_incre[ind]
+    Label(screen4a, text="Percentage increase in downloads of {0} \nfrom 2017 to 2018 : {1}%".format(cat,str(percent)), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=50, anchor=W).place(x=x3+20, y=y3+200)
+
+
+def predict_category(category1,x3,y3):
+    
+    year2017_total=[]
+    year2018_total=[]
+    perc_incre=[]
+    
+    for i in category1:
+        total17=0
+        total18=0 
+        for index,row in apps.iterrows():
+            if i==row['Category']:
+                if row['year']==2017:
+                    total17+=int(row['Installs'])
+                elif row['year']==2018:
+                    total18+=int(row['Installs'])
+        year2017_total.append(total17)
+        year2018_total.append(total18)
+
+    for i in range(len(category1)):
+        perc_incre.append(round(((year2018_total[i]-year2017_total[i])/year2017_total[i])*100,2))
+    
+    
+    max_value = max(perc_incre)
+    Label(screen4a, text="Percentage increase in downloads from 2017 to 2018 : "+str(max_value), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x3+20, y=y3+80)
+
+    max_index = perc_incre.index(max_value)
+    Label(screen4a, text="CATEGORY OF APP MOST LIKELY TO BE DOWNLOADED is\n "+str(category1[max_index]), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x3+20, y=y3+20)
+
+    
+def trends1():
+    global screen4a
+    
+    screen4a=Toplevel(screen4)
+    rt=StringVar()
+    noi=StringVar()
+    cat = StringVar()
+    
+    adjustWindow(screen4a)
+    screen4a.title("TRENDS")
+    
+    Label(screen4a, text="", width='500', height="20", bg=color1).pack() 
+    Label(screen4a, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=475,y=10)
+    Button(screen4a, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4a.destroy).place(x=1380, y=55)
+    Label(screen4a, text="PAGE 2",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1430,y=100)
+    Button(screen4a, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=trends).place(x=1350, y=100)#, command=trends1
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
+    label = Label(screen4a,borderwidth=0, image=photo1) # attaching image to the label
+    label.place(x=0, y=152)
+    
+    #Section 1
+    x1=40
+    y1=180
+    Label(screen4a, width=89, height=38, bg=bgcolor_middle).place(x=x1,y=y1)
+    Label(screen4a, text="YEAR",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+50,y=y1+10)
+    Label(screen4a, text="QUATER SPAN",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+205,y=y1+10)
+    Label(screen4a, text="DOWNLOADS",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+440,y=y1+10)
+
+    Button(screen4a, text="LOAD DATA", bg="#e79700", width=10, font=(body_font, 10, 'bold'), fg=text_color, command=quarter_report).place(x=x1+260,y=y1+290)
+
+    #Section 2
+    x2=710
+    y2=180
+    Label(screen4a, width=110, height=18, bg=bgcolor_middle).place(x=x2,y=y2)
+    Label(screen4a, text="Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+20, y=y2+20)
+    Entry(screen4a,textvar=rt,font=('Open Sans',12),width=18).place(x=x2+110, y=y2+25)
+    Label(screen4a, text="Eg : 4.1", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+110, y=y2+50)
+    
+    Label(screen4a, text="No. of Installs : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+330, y=y2+20)
+    Entry(screen4a,textvar=noi,font=('Open Sans',12),width=18).place(x=x2+490, y=y2+25)
+    Label(screen4a, text="Eg : 100000", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+490, y=y2+50)
+    
+    Button(screen4a, text="OK", bg="#e79700", width=6, font=(body_font, 10, 'bold'), fg=text_color, command=lambda: downloads_n_ratings(noi,rt,x2,y2)).place(x=x2+700,y=y2+25)
+
+    #Section 3
+    x3=710
+    y3=480
+    Label(screen4a, width=110, height=18, bg=bgcolor_middle).place(x=x3,y=y3)
+    category1=['SPORTS','ENTERTAINMENT','SOCIAL','NEWS_AND_MAGAZINES','EVENTS','TRAVEL_AND_LOCAL','GAME']
+    category1.sort()
+    
+    predict_category(category1,x3,y3)
+    Label(screen4a, text="Compare with other categories - ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x3+20, y=y3+140)
+
+    droplist = OptionMenu(screen4a, cat, *category1,command = lambda x: compare_prediction(category1,cat,x3,y3))
+    droplist.config(font=(body_font,10),width=24)
+    cat.set('--Select Category--')
+    droplist.place(x=x3+350, y=y3+140)
+
+    
+    screen4a.mainloop()
+#TRENDS1 SECTION ENDS HERE-----------------------------------------------------
+       
 def download_trend(cat,x1,y1):
     
     cat=str(cat.get()) 
@@ -274,40 +656,6 @@ def year_wise_downloads_percentage(x4,y4):
     percent = (diff/android_spec)*100
     Label(screen4, text="Percentage {0} of apps whose Android Version 'Varies With Device' is : {1}% ".format(inc_dec,round(percent,2)),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=70,anchor=W).place(x=x4+20,y=y4+yy)
     
-    
-def quarter_report(cat):
-    
-    all_years=[2010,2011,2012,2013,2014,2015,2016,2017,2018]
-    all_month=['January-February-March','April-May-June','July-August-September','October-November-December']
-
-    years, months = (len(all_years),len(all_month)) 
-    quarterly_downloads = [[0 for i in range(months)] for j in range(years)] 
-    
-   
-    for i in range(years):
-        year_no=all_years[i]
-        if row['year']==year_no:
-            if row['month']==1 or row['month']==2 or row['month']==3:
-                quarterly_downloads[i][0]+=int(row['Installs'])
-            elif row['month']==4 or row['month']==5 or row['month']==6:
-                quarterly_downloads[i][1]+=int(row['Installs'])
-            elif row['month']==7 or row['month']==8 or row['month']==9:
-                quarterly_downloads[i][2]+=int(row['Installs'])
-            elif row['month']==10 or row['month']==11 or row['month']==12:
-                quarterly_downloads[i][3]+=int(row['Installs'])
-
-    
-    max_month_downloads=list(map(max, quarterly_downloads))
-    print(max_month_downloads)
-    year_var=2010
-    for i in range(years):
-        print("YEAR:",year_var)
-        year_var+=1
-        for j in range(months):
-            if max_month_downloads[i]==quarterly_downloads[i][j]:
-                print("QUARTER SPAN:",all_month[j])
-
-
 def ratio_content_rating(one,two,x3,y3):
     
     one = str(one.get())
@@ -420,7 +768,7 @@ def trends():
     Label(screen4, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=475,y=10)
     Button(screen4, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4.destroy).place(x=1380, y=55)
     Label(screen4, text="PAGE 1",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1350,y=100)
-    Button(screen4, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color).place(x=1430, y=100)#, command=trends1
+    Button(screen4, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=trends1).place(x=1430, y=100)#, command=trends1
     photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen4,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
@@ -582,26 +930,7 @@ def stats():
     Label(screen3, text="Range",font=(body_font, 18, 'bold'), fg=text_color,width=20,anchor=W, bg=bgcolor_middle).place(x=x2+60,y=y2+170)
     Label(screen3, text="No. of Apps",font=(body_font, 18, 'bold'), fg=text_color,width=18,anchor=W, bg=bgcolor_middle).place(x=x2+310,y=y2+170)
     
-    """ 
-    TABLULAR FORMAT
-    Label(screen3, text="", width=80, height=15, bg=bgcolor_middle).place(x=620,y=200)
-    Label(screen3, text="Number Of Downloads",font=(body_font, 20, 'bold'), fg='white', bg=bgcolor_middle).place(x=630,y=210)
-    Label(screen3, text="Range",font=(body_font, 18, 'bold'), fg='white',width=20,anchor=W, bg=bgcolor_middle).place(x=640,y=250)
-    Label(screen3, text="Downloads",font=(body_font, 18, 'bold'), fg='white',width=18,anchor=W, bg=bgcolor_middle).place(x=900,y=250)
-    rangelist=[[10000,50000],[50000,150000],[150000,500000],[500000,5000000]]
-    
-    y1=310
-    for i in range(4): # this loop will generate all input field for taking input from the user
-        x1=640
-        for j in range(2):
-            e = Label(screen3,text=rangelist[i][j],font=(body_font, 12, 'bold'), fg='white',bg=bgcolor_middle)
-            e.place(x=x1,y=y1)
-            x1=x1+100
-        y1=y1+30
-    
-    """ 
     #Section 3
-    
     x3=60# Change these parameters 
     y3=500# to shift the whole below section
     today = str(date.today())
@@ -864,7 +1193,7 @@ def insert_app(entries,x1,y1):
         Label(screen2a, text="Please select android version", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
         return
     else:
-        if(re.match("[0-9](\.[0-9]{0,1}?)?",rating)):
+        if(re.match("^\d+(\.\d{0,1})?$",rating)):
             if(re.match("^[0-9]*$",reviews)):
                 if(re.match("[0-9]+(\.[0-9]?)?M",size)):
                     if(re.match("^[0-9]*$",price)):
