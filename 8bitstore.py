@@ -9,6 +9,7 @@ from pylab import rcParams
 from textblob import TextBlob
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from sklearn.linear_model import LinearRegression
 #from matplotlib.figure import Figure
 
 matplotlib.rcParams['axes.labelsize']=14
@@ -124,191 +125,11 @@ def data_wrangling():
         review=review.drop([i],axis=0)
 
     review=review[review.Translated_Review.notnull()]
+    
+    #review=review.drop_duplicates(subset='Translated_Review', keep='first')
         
 def initialise():
     global cat_inst,category,installs_sum,installs,types,genres,contentrating
-    cat_inst={}
-    cat = apps.drop_duplicates(subset='Category', keep='first')
-    category=[]
-    for i in cat['Category']:
-        category.append(i)
-    category=category.sort()
-    
-    inst = apps.drop_duplicates(subset='Installs', keep='first')
-    installs=[]
-    for i in inst['Installs']:
-        installs.append(int(i))
-    installs.sort()
-    for i in range(0,len(installs)):
-        installs[i]=str(installs[i])
-    
-    typ = apps.drop_duplicates(subset='Type', keep='first')
-    types=[]
-    for i in typ['Type']:
-        types.append(i)
-        
-    genr = apps.drop_duplicates(subset='Genres', keep='first')
-    genres=[]
-    for i in genr['Genres']:
-        genres.append(i)
-    genres=genres.sort()
-        
-    contrat = apps.drop_duplicates(subset='Content Rating', keep='first')
-    contentrating=[]
-    for i in contrat['Content Rating']:
-        contentrating.append(i)
-        
-    installs_sum=[]
-    for i in category:
-        sum=0
-        for index,row in apps.iterrows():
-            if i==row['Category']:
-                sum=sum+int(row['Installs'])
-        installs_sum.append(sum)
-    total_sum=0
-    for i in  installs_sum:
-        total_sum=total_sum+i
-    
-    i=0
-    while(i<len(category)):
-        cat_inst[category[i]]=installs_sum[i]
-        i=i+1
-
-       
-#TRENDS SECTION STARTS HERE------------------------------------------------
-
-#TRENDS1 SECTION STARTS HERE---------------------------------------------------
-from tkinter import *
-from tkinter import messagebox
-import re, pymysql
-import numpy as np 
-import pandas as pd 
-import time
-from datetime import date
-from pylab import rcParams
-from textblob import TextBlob
-import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-#from matplotlib.figure import Figure
-
-matplotlib.rcParams['axes.labelsize']=14
-matplotlib.rcParams['xtick.labelsize']=12
-matplotlib.rcParams['ytick.labelsize']=12
-matplotlib.rcParams['text.color']='k'
-
-import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
-
-import statsmodels.api as sm
-#import seaborn as sns
-#from warnings import simplefilter
-
-#Choose theme of window
-color1 ='#CD3333'#TITLE COLOR
-bgcolor_middle = '#5F9EA0'#BODY COLOR
-color3 = '#00C957'#Button Color
-text_color ='white'
-
-#Fonts
-title_font="Calibri"
-body_font="Open Sans"
-
-
-def adjustWindow(window):
-    ws = window.winfo_screenwidth() # width of the screen
-    hs = window.winfo_screenheight() # height of the screen
-    w = ws # width for the window size
-    h = hs# height for the window size
-    x = (ws/2) - (w/2) # calculate x and y coordinates for the Tk window
-    y = (hs/2) - (h/2)
-    window.geometry('%dx%d+%d+%d' % (w-15, h-40, x, y)) # set the dimensions of the screen and where it is placed
-    window.resizable(False, False) # disabling the resize option for the window
-    window.configure(background='white')
-
-def data_wrangling():
-    global apps,review
-    #DATA WRANGLING
-    #Taking data from database and storing in csv file
-    conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
-    cursor = conn.cursor()
-    query = "Select * from apps"
-    results = pd.read_sql_query(query,conn)
-    results.to_csv('F:\\Python Class\\Project\\apps.csv',index=False)
-    conn.commit()
-    conn.close()
-
-    #Data wrangling of apps
-    apps=pd.read_csv('F:\\Python Class\\Project\\apps.csv',encoding = "ISO-8859-1")
-    
-    apps['Last Updated'] = apps['Last Updated'].str.replace(',','')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('January','Jan')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('February','Feb')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('March','Mar')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('April','Apr')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('May','May')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('June','Jun')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('July','Jul')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('August','Aug')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('September','Sep')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('October','Oct')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('November','Nov')
-    apps['Last Updated'] = apps['Last Updated'].str.replace('December','Dec')
-    
-    
- 
-    apps['App'] = apps['App'].str.replace('?','')
-    apps['App'] = apps['App'].str.replace('(','')
-    apps['App'] = apps['App'].str.replace(')','')
-    apps=apps.drop([3750,6333,9306,10472],axis=0)
-
-    apps=apps[apps.Rating.notnull()]
-    
-    apps['Installs'] = apps['Installs'].str.replace(',','')
-    apps['Installs'] = apps['Installs'].str.replace('+','')
-    
-    date=apps['Last Updated']
-    d=date.values.tolist()  #temp variable
-    
-    x=[]     #temp variable
-    for i in d:
-        conv=time.strptime(i,"%b %d %Y")
-        x.append(time.strftime("%Y-%m-%d",conv))
-
-    apps['Last Updated']=x
-    
-    apps['Last Updated'] = pd.to_datetime(apps['Last Updated'])
-    apps['year'] = apps['Last Updated'].dt.year
-    apps['month'] = apps['Last Updated'].dt.month
-    
-    #Taking data from database and storing in csv file
-    conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore",use_unicode=True,charset="utf8")
-    cursor = conn.cursor()
-    query = "Select * from reviews"
-    results = pd.read_sql_query(query,conn)
-    results.to_csv('F:\\Python Class\\Project\\review.csv',index=False)
-    conn.commit()
-    conn.close()
-
-    #Data wrangling of reviews
-    review=pd.read_csv('F:\\Python Class\\Project\\review.csv',encoding = "ISO-8859-1")
-
-    for i in range(200,240):
-        review=review.drop([i],axis=0)
-
-    for i in range(1020,1098):
-        review=review.drop([i],axis=0)
-    
-    for i in range(33545,33585):
-        review=review.drop([i],axis=0)
-       
-    for i in range(51024,51064):
-        review=review.drop([i],axis=0)
-
-    review=review[review.Translated_Review.notnull()]
-        
-def initialise():
-    global cat_inst,category,installs_sum,installs,types,genres,contentrating
-    
     cat_inst={}
     cat = apps.drop_duplicates(subset='Category', keep='first')
     category=[]
@@ -356,6 +177,430 @@ def initialise():
         cat_inst[category[i]]=installs_sum[i]
         i=i+1
 
+#INSIGHTS1 SECTION STARTS HERE---------------------------------------------------
+
+#INSIGHTS1b starts here--------------------------------------------------------
+def display_review(rev,sen_reviews,x2,y2):
+    rev=int(rev.get())
+    
+    Label(screen5b, text="Review : ",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+20,y=y2+200)
+    Label(screen5b,width=90,height=15, bg=bgcolor_middle).place(x=x2+20,y=y2+240)
+
+    Label(screen5b, text=sen_reviews[rev-1],font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,wraplength=600,anchor=W).place(x=x2+20,y=y2+250)
+    return
+        
+    
+def get_num_reviews_of_app(app_name,sentiment_selected,x2,y2):
+    
+    rev=StringVar()
+    app_name=str(app_name.get())
+    sentiment_selected = str(sentiment_selected.get())
+    
+    if(app_name=="--Select Application--"):
+        Label(screen5b, text="Please Select an Application",font=(body_font, 12, 'bold'), fg='red', bg=bgcolor_middle,width=25,anchor=W).place(x=x2+210,y=y2+80)
+        return
+    if(sentiment_selected=="--Select Sentiment--"):
+        Label(screen5b, text="Please Select a Sentiment",font=(body_font, 12, 'bold'), fg='red', bg=bgcolor_middle,width=25,anchor=W).place(x=x2+210,y=y2+80)
+        return
+    
+    x=review.loc[review['App'] == app_name]
+    revi=x['Translated_Review'].tolist() 
+    senti = x['Sentiment'].tolist()
+
+    
+    sen_reviews =[]
+    for i in range(len(senti)):
+        if senti[i] ==sentiment_selected:
+            sen_reviews.append(revi[i])
+            
+    count=len(sen_reviews)
+    number=[]
+    for i in range(count):
+        number.append(i+1) 
+        
+
+    droplist = OptionMenu(screen5b, rev, *number,command=lambda x : display_review(rev,sen_reviews,x2,y2))
+    droplist.config(font=(body_font,11),width=35)
+    rev.set('--Select Review Number--')
+    droplist.place(x=x2+200, y=y2+80)    
+          
+def yearly_avg_download_month(x1,y1):
+    
+    all_years=[2010,2011,2012,2013,2014,2015,2016,2017,2018]
+    all_month=['January','February','March','April','May','June','July','August','September','October','November','December']
+
+
+    yearly_installs=[0,0,0,0,0,0,0,0,0,0,0,0]
+    yearly_counter=[0,0,0,0,0,0,0,0,0,0,0,0]
+
+    year_no=all_years[0]
+    yy=40
+    for i in range(9):
+        yearly_installs=[0,0,0,0,0,0,0,0,0,0,0,0]
+        yearly_counter=[0,0,0,0,0,0,0,0,0,0,0,0]
+        for index,row in apps.iterrows():
+            if row['year']==year_no:
+                counter=1
+                for j in range(12):
+                    if row['month']==counter:
+                        yearly_installs[j]+=int(row['Installs'])
+                        yearly_counter[j]+=1
+                    counter+=1
+            
+        for i in range(12):
+            if yearly_counter[i]==0:
+                continue
+            else:
+                yearly_installs[i]=round(yearly_installs[i]/yearly_counter[i],2)
+
+        max_value = max(yearly_installs)
+        max_index = yearly_installs.index(max_value)
+        Label(screen5b, text=year_no,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+40,y=y1+yy)
+        Label(screen5b, text=all_month[max_index],font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+200,y=y1+yy)
+        Label(screen5b, text=max_value,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+420,y=y1+yy)
+        yy+=60
+        year_no+=1
+
+def insight1b():
+    global screen5b
+    
+    screen5b = Toplevel(screen5)
+    ap=StringVar()
+    se=StringVar()
+    
+    
+    screen5b.title("INSIGHT 1")
+    adjustWindow(screen5b)
+    
+    Label(screen5b, text="", width='500', height="20", bg=color1).pack() 
+    Label(screen5b, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=455,y=10)
+    Button(screen5b, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen5b.destroy).place(x=1380, y=55)
+    Label(screen5b, text="PAGE 3",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1435,y=100)
+    Button(screen5b, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1).place(x=1270, y=100)#, command=trends1
+    Button(screen5b, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1a).place(x=1350, y=100)#, command=trends1
+           
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\review.png")
+    label = Label(screen5b,borderwidth=0, image=photo1)
+    label.place(x=0, y=152)
+    
+    
+    #Section 1
+    x1=40
+    y1=170
+    Label(screen5b, width=100, height=38, bg=bgcolor_middle).place(x=x1,y=y1)
+    Label(screen5b, text="YEAR",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+40,y=y1+10)
+    Label(screen5b, text="MONTH",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+210,y=y1+10)
+    Label(screen5b, text="AVERAGE DOWNLOADS",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+410,y=y1+10)
+    yearly_avg_download_month(x1,y1)
+    
+    #Section 2
+    x2=780# Change these parameters 
+    y2=170# to shift the whole below section
+    Label(screen5b, width=98, height=38, bg=bgcolor_middle).place(x=x2,y=y2)
+    
+    cat = review.drop_duplicates(subset='App', keep='first')
+    app=[]
+    app=cat['App'].tolist()
+    droplist = OptionMenu(screen5b, ap, *app)
+    droplist.config(font=(body_font,11),width=32)
+    ap.set('--Select Application--')
+    droplist.place(x=x2+20, y=y2+20)
+    
+    sentiments=['Positive','Negative','Neutral']
+    droplist = OptionMenu(screen5b, se, *sentiments,command= lambda x : get_num_reviews_of_app(ap,se,x2,y2))
+    droplist.config(font=(body_font,11),width=32)
+    se.set('--Select Sentiment--')
+    droplist.place(x=x2+350, y=y2+20)
+  
+    screen5b.mainloop()
+#INSIGHT1b ends here-----------------------------------------------------------
+    
+#INSIGHT1a starts here--------------------------------------------------------    
+def sentiment_ratio(req,x2,y2):
+    
+    cat = review.drop_duplicates(subset='App', keep='first')
+    app=[]
+    app=cat['App'].tolist()
+     
+    positive=[]
+    negative=[]
+    pos_perc=[]
+    neg_perc=[]
+    
+    req = str(req.get())
+    print(req)
+    for i in app:
+             
+        pos=0
+        neg=0
+        x=review.loc[review['App'] == i]
+   
+        counter=x['Sentiment'].tolist()
+   
+   
+        pos=counter.count("Positive")
+        neg=counter.count("Negative")
+       
+        positive.append(pos)
+        negative.append(neg)
+    
+    for i in range(len(app)):
+        if positive[i]==0 and negative[i]==0:
+            pos_perc.append(0)
+            neg_perc.append(0)
+        else:
+            pos_perc.append(round((positive[i]/(positive[i]+negative[i]))*100,2))
+            neg_perc.append(round((negative[i]/(positive[i]+negative[i]))*100,2))
+    yy=45
+    xx=20 
+    
+    
+    Label(screen5a, width=66, height=35, bg=bgcolor_middle).place(x=30,y=210)
+    Label(screen5a, width=66, height=38, bg=bgcolor_middle).place(x=525,y=170)
+    Label(screen5a, width=68, height=38, bg=bgcolor_middle).place(x=1015,y=170)
+  
+              
+    if(req=="APPS WITH APPROX SAME RATIO"):
+        k=1
+        for i in range(len(app)):
+            if positive[i]!=0 and negative[i]!=0 and positive[i]/negative[i]>=0.95 and positive[i]/negative[i]<=1.05:
+                Label(screen5a, text="{0}. {1}".format(k,app[i]),font=(body_font, 13, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+xx,y=y2+yy)
+                yy+=20
+                k+=1
+                if(k==27 or k==55 ):
+                    xx+=490
+                    yy=10
+                
+        return
+       
+    elif(req=="APPS WITH MOST POSITIVE SENTIMENT"):
+        k=1
+        max_value_pos = max(pos_perc)
+        for i in range(len(app)):
+            if pos_perc[i]==max_value_pos:
+                Label(screen5a, text="{0}. {1}".format(k,app[i]),font=(body_font, 13, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+xx,y=y2+yy)
+                yy+=20
+                k+=1
+                if(k==27 or k==55 ):
+                    xx+=490
+                    yy=10
+                
+        return
+    
+    elif(req=="APPS WITH MOST NEGATIVE SENTIMENT"):
+        
+        max_value_neg = max(neg_perc)
+        k=1
+        for i in range(len(app)):
+            if neg_perc[i]==max_value_neg:
+                Label(screen5a, text="{0}. {1}".format(k,app[i]),font=(body_font, 13, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+xx,y=y2+yy)
+                yy+=20
+                k+=1
+                if(k==27 or k==55 ):
+                    xx+=490
+                    yy=10
+        
+        return
+
+def insight1a():
+    global screen5a
+    
+    screen5a = Toplevel(screen5)
+    req=StringVar()
+    
+    screen5a.title("INSIGHT 1")
+    adjustWindow(screen5a)
+    
+    Label(screen5a, text="", width='500', height="20", bg=color1).pack() 
+    Label(screen5a, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=455,y=10)
+    Button(screen5a, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen5a.destroy).place(x=1380, y=55)
+    Label(screen5a, text="PAGE 2",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1350,y=100)
+    Button(screen5a, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1).place(x=1270, y=100)#, command=trends1
+    Button(screen5a, text='PAGE 3', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1b).place(x=1435, y=100)#, command=trends1
+           
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\review.png")
+    label = Label(screen5a,borderwidth=0, image=photo1)
+    label.place(x=0, y=152)
+    
+    
+    #Section 1
+    x1=30
+    y1=170
+    Label(screen5a, width=66, height=38, bg=bgcolor_middle).place(x=x1,y=y1)
+    require=["APPS WITH APPROX SAME RATIO","APPS WITH MOST POSITIVE SENTIMENT","APPS WITH MOST NEGATIVE SENTIMENT"]
+
+    droplist = OptionMenu(screen5a, req, *require,command = lambda x:  sentiment_ratio(req,x1,y1))
+    droplist.config(font=(body_font,11),width=35)
+    req.set('--Select Requirement--')
+    droplist.place(x=x1+65, y=y1+10)
+   
+    
+    #Section 2
+    x2=525# Change these parameters 
+    y2=170# to shift the whole below section
+    Label(screen5a, width=66, height=38, bg=bgcolor_middle).place(x=x2,y=y2)
+    
+    #Section 3
+    x3=1015# Change these parameters 
+    y3=170# to shift the whole below section
+    Label(screen5a, width=68, height=38, bg=bgcolor_middle).place(x=x3,y=y3)
+  
+    
+    screen5a.mainloop()
+
+#INSIGHT1a ends here-----------------------------------------------------------
+    
+def rel_polarity_subjectivity(x1,y1):
+    x=review['Sentiment_Polarity'].values.reshape(-1,1)
+    y=review['Sentiment_Subjectivity'].values.reshape(-1,1)
+    reg=LinearRegression()
+    reg.fit(x,y)
+    
+    
+    m=round(reg.coef_[0][0],5)
+    c=round(reg.intercept_[0],5)
+    result="Y = "+str(m)+"X + "+str(c)  
+    
+    predictions=reg.predict(x)
+    
+    f=plt.figure(figsize=(8,7),dpi=70)
+    ax3 = f.add_subplot(111)
+    
+
+    ax3.scatter(review['Sentiment_Polarity'],review['Sentiment_Subjectivity'],c='blue',alpha=0.1)
+    ax3.plot(review['Sentiment_Polarity'],predictions,c='red',linewidth=2)
+    ax3.set_ylabel("Sentiment Subjectivity")
+    ax3.set_xlabel("Sentiment Polarity")
+    
+    Label(screen5, text=result,font=(body_font, 14, 'bold'), fg=text_color, bg=bgcolor_middle,width=40,anchor=W).place(x=x1+20,y=y1+50)
+
+    canvas = FigureCanvasTkAgg(f, master=screen5)
+    canvas.get_tk_widget().place(x=x1+70,y=y1+90)
+    canvas.draw()
+
+
+
+def size_installs(x2,y2):
+    temp = review.drop_duplicates(subset='App', keep='first')
+    app=temp['App'].tolist()
+
+    indexNames = apps[ apps['Size'] == "Varies with device" ].index
+     
+    # Delete these row indexes from dataFrame
+    apps.drop(indexNames , inplace=True)
+    
+    
+    temp=apps['Size'].tolist()
+    
+    size=[]
+    for i in temp:
+        if 'M' in i:
+            x=i.replace("M","")
+            size.append(float(x)*1024)
+        elif 'k' in i:
+            x=i.replace("k","")
+            size.append(float(x))
+            
+    apps['Size']=size
+    
+    list_apps=apps['Size'].tolist()
+    
+    
+    sum1=0
+    sum2=0
+    sum3=0
+    sum4=0
+    sum5=0
+    sum6=0
+    
+    for index,row in apps.iterrows():
+        if row['Size']>=0 and row['Size']<20000:
+            sum1+=int(row['Installs'])
+        elif row['Size']>=20000 and row['Size']<40000:
+            sum2+=int(row['Installs'])
+        elif row['Size']>=40000 and row['Size']<60000:
+            sum3+=int(row['Installs'])
+        elif row['Size']>=60000 and row['Size']<80000:
+            sum4+=int(row['Installs'])
+        elif row['Size']>=80000 and row['Size']<100000:
+            sum5+=int(row['Installs'])
+        elif row['Size']>=100000 and row['Size']<120000:
+            sum6+=int(row['Installs'])
+    
+    sum1/=1000000
+    sum2/=1000000
+    sum3/=1000000
+    sum4/=1000000
+    sum5/=1000000
+    sum6/=1000000
+    
+    list_installs=[]
+    list_installs.append(sum1)
+    list_installs.append(sum2)
+    list_installs.append(sum3)
+    list_installs.append(sum4)
+    list_installs.append(sum5)
+    list_installs.append(sum6)
+    
+    activities = ['0-20 Mb', '20-40 Mb', '40-60 Mb', '60-80 Mb','80-100 Mb','100-120 Mb']
+    colors = ['red', 'yellow', 'green', 'blue','orange','pink'] 
+      
+    
+    f=plt.figure(figsize=(8,7),dpi=70)
+    ax4 = f.add_subplot(111)
+    
+    # plotting the pie chart 
+    ax4.pie(list_installs, labels = activities, colors=colors,  
+            startangle=0, shadow = True,  
+            radius = 1.0, autopct = '%1.1f%%') 
+    
+    canvas = FigureCanvasTkAgg(f, master=screen5)
+    canvas.get_tk_widget().place(x=x2+80,y=y2+90)
+    canvas.draw()
+     
+
+
+def insight1():
+    global screen5
+    
+    screen5 = Toplevel(screen)
+    
+    screen5.title("INSIGHT 1")
+    adjustWindow(screen5)
+    
+    Label(screen5, text="", width='500', height="20", bg=color1).pack() 
+    Label(screen5, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=455,y=10)
+    Button(screen5, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen5.destroy).place(x=1380, y=55)
+    Label(screen5, text="PAGE 1",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1270,y=100)
+    Button(screen5, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1a).place(x=1350, y=100)#, command=trends1
+    Button(screen5, text='PAGE 3', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1b).place(x=1435, y=100)#, command=trends1
+      
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\review.png")
+    label = Label(screen5,borderwidth=0, image=photo1)
+    label.place(x=0, y=152)
+    
+    
+    #Section 1
+    x1=30# Change these parameters 
+    y1=170# to shift the whole below section
+    Label(screen5, text="", width=100, height=40, bg=bgcolor_middle).place(x=x1,y=y1)
+    Label(screen5, text="Relation between Sentiment Polarity and Sentiment Subjectivity",font=(body_font, 16, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+20,y=y1+5)
+    rel_polarity_subjectivity(x1,y1)
+    
+    #Section 2
+    x2=780# Change these parameters 
+    y2=170# to shift the whole below section
+    Label(screen5, text="", width=100, height=40, bg=bgcolor_middle).place(x=x2,y=y2)
+    Label(screen5, text="Pie Chart of size of the app and no. of downloads",font=(body_font, 16, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+20,y=y2+5)
+    size_installs(x2,y2) 
+  
+    screen5.mainloop()
+        
+#INSIGHTS1 SECTION ENDS HERE-----------------------------------------------------
+    
+#INSIGHTS2 SECTION STARTS HERE----------------------------------------------------
+
+#INSIGHTS2a SECTION STARTS HERE----------------------------------------------------
 
 def quarter_report():
     x1=40
@@ -493,7 +738,7 @@ def predict_category(category1,x3,y3):
     Label(screen4a, text="CATEGORY OF APP MOST LIKELY TO BE DOWNLOADED is\n "+str(category1[max_index]), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x3+20, y=y3+20)
 
     
-def trends1():
+def insight2a():
     global screen4a
     
     screen4a=Toplevel(screen4)
@@ -502,13 +747,13 @@ def trends1():
     cat = StringVar()
     
     adjustWindow(screen4a)
-    screen4a.title("TRENDS")
+    screen4a.title("INSIGHT 2")
     
     Label(screen4a, text="", width='500', height="20", bg=color1).pack() 
     Label(screen4a, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=475,y=10)
     Button(screen4a, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4a.destroy).place(x=1380, y=55)
     Label(screen4a, text="PAGE 2",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1430,y=100)
-    Button(screen4a, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=trends).place(x=1350, y=100)#, command=trends1
+    Button(screen4a, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight2).place(x=1350, y=100)#, command=trends1
     photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen4a,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
@@ -554,7 +799,7 @@ def trends1():
 
     
     screen4a.mainloop()
-#TRENDS1 SECTION ENDS HERE-----------------------------------------------------
+#INSIGHT2a SECTION ENDS HERE-----------------------------------------------------
        
 def download_trend(cat,x1,y1):
     
@@ -753,7 +998,7 @@ def category_best_month(cat,x2,y2):
                     Label(screen4, text=str(all_month[j])+" ("+str(y)+")\n"+str(max_month_category),font=(body_font, 12, 'bold'), fg=text_color, bg=bgcolor_middle,width=15,anchor=W).place(x=x2+260,y=y2+80)
 
                     
-def trends():
+def insight2():
     global screen4,cat
     
     screen4=Toplevel(screen)
@@ -762,13 +1007,13 @@ def trends():
     cr1=StringVar()
     cr2=StringVar()
     adjustWindow(screen4)
-    screen4.title("TRENDS")
+    screen4.title("INSIGHT 2")
     
     Label(screen4, text="", width='500', height="20", bg=color1).pack() 
     Label(screen4, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=475,y=10)
     Button(screen4, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4.destroy).place(x=1380, y=55)
     Label(screen4, text="PAGE 1",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1350,y=100)
-    Button(screen4, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=trends1).place(x=1430, y=100)#, command=trends1
+    Button(screen4, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight2a).place(x=1430, y=100)#, command=trends1
     photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen4,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
@@ -822,7 +1067,7 @@ def trends():
     
     screen4.mainloop()
 
-#TRENDS SECTION ENDS HERE----------------------------------------------
+#INSIGHT 2 SECTION ENDS HERE----------------------------------------------
     
 #STATS SECTION STARTS HERE----------------------------------------------
 
@@ -974,7 +1219,7 @@ def register_user(x1,y1):
         if tnc.get(): # checking for acceptance of agreement
             if re.match("^((\+)?(\d{2}[-]))?(\d{10}){1}?$",phoneno.get()):
                 if re.match("^.+@(\[?)[a-zA-Z0-9-.]+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$", email.get()): # validating the email
-                    if password.get() == repassword.get(): # checking both password match or not
+                    if password.get() == repassword.get() and re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",password.get()): # checking both password match or not
                         # if u enter in this block everything is fine just enter the values in database
                         gender_value = 'male'
                         if gender.get() == 2:
@@ -992,7 +1237,7 @@ def register_user(x1,y1):
                             connection.close() # closing the connection of the database
                             Label(screen1, text="Registration Successfull", fg="green", font=(title_font, 16,'bold'), width='30', anchor=W,bg=bgcolor_middle).place(x=x1+210, y=y1+430) # printing successful registration message
                     else:
-                        Label(screen1, text="Password does not match", fg="red", font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+210, y=y1+430)
+                        Label(screen1, text="Password invalid / does not match", fg="red", font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+210, y=y1+430)
                         return
                 else:
                     Label(screen1, text="Please enter valid email id", fg="red", font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+210, y=y1+430)
@@ -1041,6 +1286,7 @@ def register():
     Label(screen1, text="Email ID :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+245)
     Entry(screen1, textvar=email,width=30).place(x=x1+275, y=y1+250)
     Label(screen1, text="Password :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+305)
+    Label(screen1, text="(Min. 8 characters, 1 Upper Case, 1 Lower Case, 1 Special Character)", font=(body_font, 8), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+330)
     Entry(screen1, textvar=password, show="*",width=30).place(x=x1+275, y=y1+310)
     Label(screen1, text="Confirm Password :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+365)
     entry_4 = Entry(screen1, textvar=repassword, show="*",width=30)
@@ -1462,8 +1708,8 @@ def home_page(user):
     photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png")
     label = Label(screen2,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
-    Button(screen2, text='Reviews', width=15, font=(body_font, 23, 'bold'), bg=color3, fg=text_color).place(x=130, y=200)#, command=reviews
-    Button(screen2, text='Trends', width=15, font=(body_font, 23, 'bold'), bg=color3, fg=text_color,command=trends).place(x=600, y=200)
+    Button(screen2, text='Insight 1', width=15, font=(body_font, 23, 'bold'), bg=color3, fg=text_color,command=insight1).place(x=130, y=200)
+    Button(screen2, text='Insight 2', width=15, font=(body_font, 23, 'bold'), bg=color3, fg=text_color,command=insight2).place(x=600, y=200)
     Button(screen2, text='Stats', width=15, font=(body_font, 23, 'bold'), bg=color3, fg=text_color,command=stats).place(x=1070, y=200)
     
     x2=700#Used in 2nd section
