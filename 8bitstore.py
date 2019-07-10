@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import re, pymysql
-import numpy as np 
+import statsmodels.api as sm
 import pandas as pd 
 import time
 from datetime import date
@@ -10,7 +10,7 @@ from textblob import TextBlob
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.linear_model import LinearRegression
-#from matplotlib.figure import Figure
+
 
 matplotlib.rcParams['axes.labelsize']=14
 matplotlib.rcParams['xtick.labelsize']=12
@@ -20,9 +20,6 @@ matplotlib.rcParams['text.color']='k'
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
 
-import statsmodels.api as sm
-#import seaborn as sns
-#from warnings import simplefilter
 
 #Choose theme of window
 color1 ='#CD3333'#TITLE COLOR
@@ -125,8 +122,8 @@ def data_wrangling():
         review=review.drop([i],axis=0)
 
     review=review[review.Translated_Review.notnull()]
+    review['App'] = review['App'].str.replace('?','')
     
-    #review=review.drop_duplicates(subset='Translated_Review', keep='first')
         
 def initialise():
     global cat_inst,category,installs_sum,installs,types,genres,contentrating
@@ -503,9 +500,6 @@ def size_installs(x2,y2):
             
     apps['Size']=size
     
-    list_apps=apps['Size'].tolist()
-    
-    
     sum1=0
     sum2=0
     sum3=0
@@ -557,8 +551,6 @@ def size_installs(x2,y2):
     canvas = FigureCanvasTkAgg(f, master=screen5)
     canvas.get_tk_widget().place(x=x2+80,y=y2+90)
     canvas.draw()
-     
-
 
 def insight1():
     global screen5
@@ -652,7 +644,7 @@ def downloads_n_ratings(noi,rt,x2,y2):
     if(noi=="" or rt==""):
          Label(screen4a, text="Please fill all details",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W,).place(x=x2+550,y=y2+70)
          return
-    if(re.match("^\d+(\.\d{0,1})?$",rt)):
+    if(re.match("^\d+(\.\d{0,1})?$",rt) and int(rt)>=0 and int(rt)<=5):
         if(re.match("^[0-9]*$",noi)):
             rt = float(rt)
             for index,row in apps.iterrows():
@@ -667,17 +659,17 @@ def downloads_n_ratings(noi,rt,x2,y2):
                     else:
                         lessdownloadslessratings+=1 
 
-            Label(screen4a, text="More than {0} downloads and rating above {1} : {2}".format(noi,rt,moredownloadsmoreratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+100)
-            Label(screen4a, text="More than {0} downloads and rating below {1} : {2}".format(noi,rt,moredownloadslessratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+140)
-            Label(screen4a, text="Less than {0} downloads and rating above {1} : {2}".format(noi,rt,lessdownloadsmoreratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+180)
-            Label(screen4a, text="Less than {0} downloads and rating below {1} : {2}".format(noi,rt,lessdownloadslessratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+220)
-            Label(screen4a, text="",width=29,font=(body_font, 11, 'bold'), bg=bgcolor_middle).place(x=x2+500,y=y2+70)
+            Label(screen4a, text="More than {0} downloads and rating above {1} : {2}".format(noi,rt,moredownloadsmoreratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+120)
+            Label(screen4a, text="More than {0} downloads and rating below {1} : {2}".format(noi,rt,moredownloadslessratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+160)
+            Label(screen4a, text="Less than {0} downloads and rating above {1} : {2}".format(noi,rt,lessdownloadsmoreratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+200)
+            Label(screen4a, text="Less than {0} downloads and rating below {1} : {2}".format(noi,rt,lessdownloadslessratings),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+30,y=y2+240)
+            Label(screen4a, text="",width=29,font=(body_font, 11, 'bold'), bg=bgcolor_middle).place(x=x2+500,y=y2+95)
             return  
         else:
-            Label(screen4a, text="Enter Valid Number of installs",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W,).place(x=x2+550,y=y2+70)
+            Label(screen4a, text="Enter Valid Number of installs",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W,).place(x=x2+550,y=y2+95)
             return  
     else:
-        Label(screen4a, text="Enter Valid Rating",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W).place(x=x2+550,y=y2+70)
+        Label(screen4a, text="Enter Valid Rating",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W).place(x=x2+550,y=y2+95)
         return
 
 def compare_prediction(category1,cat,x3,y3):
@@ -772,15 +764,17 @@ def insight2a():
     x2=710
     y2=180
     Label(screen4a, width=110, height=18, bg=bgcolor_middle).place(x=x2,y=y2)
-    Label(screen4a, text="Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+20, y=y2+20)
-    Entry(screen4a,textvar=rt,font=('Open Sans',12),width=18).place(x=x2+110, y=y2+25)
-    Label(screen4a, text="Eg : 4.1", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+110, y=y2+50)
+    Label(screen4a, text="Number of Apps having :", font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+20, y=y2+10)
+
+    Label(screen4a, text="Rating - ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+20, y=y2+50)
+    Entry(screen4a,textvar=rt,font=('Open Sans',12),width=18).place(x=x2+110, y=y2+50)
+    Label(screen4a, text="Eg : 4.1(out of 5)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+110, y=y2+75)
     
-    Label(screen4a, text="No. of Installs : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+330, y=y2+20)
-    Entry(screen4a,textvar=noi,font=('Open Sans',12),width=18).place(x=x2+490, y=y2+25)
-    Label(screen4a, text="Eg : 100000", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+490, y=y2+50)
+    Label(screen4a, text="No. of Installs - ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+330, y=y2+50)
+    Entry(screen4a,textvar=noi,font=('Open Sans',12),width=18).place(x=x2+490, y=y2+50)
+    Label(screen4a, text="Eg : 100000", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+490, y=y2+75)
     
-    Button(screen4a, text="OK", bg="#e79700", width=6, font=(body_font, 10, 'bold'), fg=text_color, command=lambda: downloads_n_ratings(noi,rt,x2,y2)).place(x=x2+700,y=y2+25)
+    Button(screen4a, text="OK", bg="#e79700", width=6, font=(body_font, 10, 'bold'), fg=text_color, command=lambda: downloads_n_ratings(noi,rt,x2,y2)).place(x=x2+700,y=y2+50)
 
     #Section 3
     x3=710
@@ -805,7 +799,6 @@ def download_trend(cat,x1,y1):
     
     cat=str(cat.get()) 
     category_name=apps.loc[apps['Category']==cat]
-    #print(category_name)
     cols=['App','Category','Rating','Reviews','Size','Type','Price','Content Rating','Genres','Current Ver','Android Ver','year','month']
     category_name.drop(cols,axis=1,inplace=True)
     category_name=category_name.sort_values('Last Updated')
@@ -817,10 +810,7 @@ def download_trend(cat,x1,y1):
    
     
     category_name['Last Updated']=pd.to_datetime(category_name['Last Updated'])
-    #print(category.dtypes)
     category_name=category_name.set_index('Last Updated')
-    #print(category_name.head())
-    #print(category.plot(grid=True))
     decomposition=sm.tsa.seasonal_decompose(category_name,model="additive",freq=30)
     fig=decomposition.plot()
     
@@ -867,12 +857,10 @@ def year_wise_downloads_percentage(x4,y4):
             value=high_low[ind][indx]
             Label(screen4, text="Category with {0} downloads in {1}: {2} ({3})".format(j,i,category[list_sum_year[ind].index(value)],value),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=70,anchor=W).place(x=x4+20,y=y4+yy)
             yy=yy+40
-            #print("Category with {0} downloads in {1}: {2} ({3})".format(j,i,category[list_sum_year[ind].index(value)],value))
-
-
+            
     for i in range(len(total_installs)):
         total_installs[i]=sum(list_sum_year[i])
-    
+ 
     yy=yy+20
     for i in range(len(total_installs)-1):
         diff = total_installs[i+1]-total_installs[i]
@@ -882,7 +870,6 @@ def year_wise_downloads_percentage(x4,y4):
         percentage = (diff/total_installs[i])*100
         Label(screen4, text="Percentage {0} from {1} to {2} : {3}%".format(inc_dec,year[i],year[i+1],round(percentage,2)),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=70,anchor=W).place(x=x4+20,y=y4+yy)
         yy=yy+40
-        #print('Percentage {0} from {1} to {2} : {3}'.format(inc_dec,year[i],year[i+1],percentage))
         
     for i in apps:
         android_spec=0
@@ -910,7 +897,7 @@ def ratio_content_rating(one,two,x3,y3):
         Label(screen4, text="Please select both content ratings..!!".format(one,two,ratio),font=(body_font, 12, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x3+20,y=y3+40)
         return
     one_downloads=0
-    two_downloads=0#since 0 by 0 gives a division error
+    two_downloads=0
     try:
         for i in apps:
             for index,row in apps.iterrows():
@@ -925,8 +912,6 @@ def ratio_content_rating(one,two,x3,y3):
 
     except ZeroDivisionError:
         return
-
-    #print("Ratio of downloads of teen to mature is :",ratio)
 
 
 def category_best_month(cat,x2,y2):
@@ -986,9 +971,8 @@ def category_best_month(cat,x2,y2):
             elif row['month']==12:
                 monthly_downloads[j][11]+=int(row['Installs'])        
 
-    #print(list(map(max, monthly_downloads)))
     max_month_category=max(map(max, monthly_downloads))
-    print(max_month_category)
+    
     max_element_category=[(ix,iy) for ix, row in enumerate(monthly_downloads) for iy, i in enumerate(row) if i == max_month_category]
     for i in range(9):
         if max_element_category[0][0]==i:
@@ -1062,8 +1046,6 @@ def insight2():
     Label(screen4, text="", width=128, height=30, bg=bgcolor_middle).place(x=x4,y=y4)
     Button(screen4, text="LOAD DATA", bg="#e79700", width=10, font=(body_font, 10, 'bold'), fg=text_color, command=lambda : year_wise_downloads_percentage(x4,y4)).place(x=x4+20,y=y4+20)
 
-    
-    #Label(screen4, text="",font=("Open Sans", 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+145,y=y1+5)
     
     screen4.mainloop()
 
@@ -1286,7 +1268,7 @@ def register():
     Label(screen1, text="Email ID :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+245)
     Entry(screen1, textvar=email,width=30).place(x=x1+275, y=y1+250)
     Label(screen1, text="Password :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+305)
-    Label(screen1, text="(Min. 8 characters, 1 Upper Case, 1 Lower Case, 1 Special Character)", font=(body_font, 8), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+330)
+    Label(screen1, text="(Min. 8 characters,1 Number, 1 Upper Case, 1 Lower Case, 1 Special Character)", font=(body_font, 8), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+330)
     Entry(screen1, textvar=password, show="*",width=30).place(x=x1+275, y=y1+310)
     Label(screen1, text="Confirm Password :", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+365)
     entry_4 = Entry(screen1, textvar=repassword, show="*",width=30)
@@ -1343,7 +1325,6 @@ def insert_review(entries,x1,y1):
     conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")#,use_unicode=True,charset="utf8"
     cursor = conn.cursor()
     query = "INSERT INTO reviews VALUES('"+ appname + "', '"+ review + "', '"+ sen + "', '"+ sentimentpolarity + "', '"+ sentimentsubjectivity + "');"
-    #(App,Translated_Review,Sentiment,Sentiment_Polarity,Sentiment_Subjectivity)
     cursor.execute(query) 
     Label(screen2b, text="Added Review Successfully", fg="green",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+210, y=y1+160)
                                        
@@ -1439,7 +1420,7 @@ def insert_app(entries,x1,y1):
         Label(screen2a, text="Please select android version", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
         return
     else:
-        if(re.match("^\d+(\.\d{0,1})?$",rating)):
+        if(re.match("^\d+(\.\d{0,1})?$",rating) and int(rt)>=0 and int(rt)<=5):
             if(re.match("^[0-9]*$",reviews)):
                 if(re.match("[0-9]+(\.[0-9]?)?M",size)):
                     if(re.match("^[0-9]*$",price)):
@@ -1476,7 +1457,6 @@ def insert_app(entries,x1,y1):
                                         conn = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")#,use_unicode=True,charset="utf8"
                                         cursor = conn.cursor()
                                         query = "INSERT INTO apps VALUES('"+ appname + "', '"+ categoryname + "', '"+ rating + "', '"+ reviews + "', '"+ size + "', '"+ installs + "', '"+ typ + "', '"+ price + "', '"+ contentrating + "', '"+ genre + "', '"+ lastupdated + "', '"+ currentversion + "', '"+ androidversion + "');"
-                                        #(App,Category,Rating,Reviews,Size,Installs,Type,Price,Content Rating,Genres,Last Updated,Current Ver,Android Ver)
                                         
                                         cursor.execute(query) 
                                         conn.commit() 
@@ -1556,7 +1536,7 @@ def add_app(apprecord):
         Label(screen2a, text="Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+180)
         e[2]=Entry(screen2a,font=('Open Sans',12),width=22)
         e[2].place(x=x1+275, y=y1+185)
-        Label(screen2a, text="Eg : 4.1", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+210)
+        Label(screen2a, text="Eg : 4.1(out of 5)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+210)
         e[2].insert(0,i[2])
         
         Label(screen2a, text="Reviews : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+240)
@@ -1690,7 +1670,100 @@ def search(x2,y2,search_item):
 
             break#Incase of multiple values it will only show the details of the first value
      
-             
+
+def compareCategory(cat,xx,yy):
+    content_rating=['Everyone','Everyone 10+','Teen','Mature 17+','Adults only 18+']
+    
+    cat=str(cat.get())
+    try:
+        no_of_apps=0
+        total_rating=0
+        total_installs=0
+        total_size=0
+        size_counter=0
+        free=0
+        paid=0
+        cat_con_rating=[0,0,0,0,0]
+    
+        Label(screen2c, text="CATEGORY : "+cat, font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+90)
+    
+    
+        for index,row in apps.iterrows():
+            if cat==row['Category']:
+                no_of_apps+=1
+                total_rating+=int(row['Rating'])
+                total_installs+=int(row['Installs'])
+                if row['Type']=='Free':
+                    free+=1
+                elif row['Type']=='Paid':
+                    paid+=1
+                if row['Content Rating']=='Everyone':
+                    cat_con_rating[0]+=1
+                elif row['Content Rating']=='Everyone 10+':
+                    cat_con_rating[1]+=1
+                elif row['Content Rating']=='Teen':
+                    cat_con_rating[2]+=1
+                elif row['Content Rating']=='Mature 17+':
+                    cat_con_rating[3]+=1
+                elif row['Content Rating']=='Adults only 18+':
+                    cat_con_rating[4]+=1
+                
+                    
+        Label(screen2c, text="Total number of apps:{0} ".format(str(no_of_apps)), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+150)
+ 
+        Label(screen2c, text="Average rating:"+str(round(total_rating/no_of_apps,2)), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+210)
+
+        Label(screen2c, text="Total number of installs:"+str(total_installs), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+270)
+
+        Label(screen2c, text="Total number of free apps:"+str(free), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+330)
+
+        Label(screen2c, text="Total number of paid apps:"+str(paid), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+390)
+    
+        highest_value_con_rating = max(cat_con_rating)
+        index = cat_con_rating.index(highest_value_con_rating)
+    
+        Label(screen2c, text="Maximum apps consists content rating:"+str(content_rating[index]), font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=xx+40, y=yy+450)
+
+    
+    except(ZeroDivisionError):
+        return
+
+def compare_Category():
+    global screen2c
+    
+    screen2c = Toplevel(screen2)
+    cat1 = StringVar()
+    cat2 = StringVar()
+    screen2c.title("COMPARE CATEGORY")
+    adjustWindow(screen2c) # configuring the window
+    
+    Label(screen2c, text="", width='500', height="20", bg=color1).pack() 
+    Label(screen2c, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
+    Button(screen2c, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen2c.destroy).place(x=1380, y=55)
+    photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png") 
+    label = Label(screen2c,borderwidth=0, image=photo1)
+    label.place(x=0, y=152)
+    
+    x1=60
+    y1=180
+    Label(screen2c,width=95,height=38, bg=bgcolor_middle).place(x=x1, y=y1)
+    Label(screen2c, text="Category 1 : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+40, y=y1+20)
+    droplist = OptionMenu(screen2c,cat1, *category,command=lambda x:compareCategory(cat1,x1,y1))
+    droplist.config(font=('Open Sans',12),width=22)
+    cat1.set('--select the category--')
+    droplist.place(x=x1+220, y=y1+20)
+    
+    x2=790
+    y2=180
+    Label(screen2c,width=95,height=38, bg=bgcolor_middle).place(x=x2, y=y2)
+    Label(screen2c, text="Category 2 : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x2+40, y=y2+20)
+    droplist = OptionMenu(screen2c,cat2, *category,command=lambda x:compareCategory(cat2,x2,y2))
+    droplist.config(font=('Open Sans',12),width=22)
+    cat2.set('--select the category--')
+    droplist.place(x=x2+220, y=y2+20)
+    
+    screen2c.mainloop()
+            
 def home_page(user):
     global screen2
  
@@ -1732,7 +1805,8 @@ def home_page(user):
     Button(screen2, text='Search', width=12, font=(body_font, 13, 'bold'), bg="#FF4040", fg=text_color,command=lambda : search(x2,y2,e1.get())).place(x=x1+170, y=y1+100)
     Button(screen2, text='Add App', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=lambda : add_app(apprecord)).place(x=x1+50, y=y1+200)
     Button(screen2, text='Add Review', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=add_review).place(x=x1+250, y=y1+200)
-    
+    Button(screen2, text='Compare Category', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=compare_Category).place(x=x1+160, y=y1+250)
+
     #Search Results Section
     Label(screen2, text="", width=100, height=25, bg=bgcolor_middle).place(x=x2,y=y2)
     Label(screen2, text="Search Results :",font=(title_font, 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+20,y=y2+10)
@@ -1751,9 +1825,8 @@ def login_verify():
     connection.commit() # commiting the connection then closing it.
     connection.close() # closing the connection of the database
     if user:
-        #messagebox.showinfo("Congratulations !!", "Login Succesfull") # displaying message for successful login
         userID = user[0][0]
-        home_page(user) # opening welcome window
+        home_page(user) 
     else:
         messagebox.showerror("Error", "Invalid Username or Password") # displaying message for invalid details
      
@@ -1767,6 +1840,7 @@ def main_screen():
 
     Label(screen, text="", width="500", height="20", bg=color1).pack()
     Label(screen, text="8-BIT ANALYSIS", font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
+    
     photo = PhotoImage(file="F:\\Python Class\\Project\\welcome.png")
     label = Label(screen,borderwidth=0, image=photo)
     label.place(x=0, y=152)
