@@ -31,6 +31,9 @@ text_color ='white'
 title_font="Calibri"
 body_font="Open Sans"
 
+#Files and images location
+file_add="F:\\Python Class\\Project"
+
 def adjustWindow(window):
     ws = window.winfo_screenwidth() # width of the screen
     hs = window.winfo_screenheight() # height of the screen
@@ -50,12 +53,12 @@ def data_wrangling():
     cursor = conn.cursor()
     query = "Select * from apps"
     results = pd.read_sql_query(query,conn)
-    results.to_csv('F:\\Python Class\\Project\\apps.csv',index=False)
+    results.to_csv(file_add+'\\apps.csv',index=False)
     conn.commit()
     conn.close()
 
     #Data wrangling of apps
-    apps=pd.read_csv('F:\\Python Class\\Project\\apps.csv',encoding = "ISO-8859-1")
+    apps=pd.read_csv(file_add+'\\apps.csv',encoding = "ISO-8859-1")
     
     apps['Last Updated'] = apps['Last Updated'].str.replace(',','')
     apps['Last Updated'] = apps['Last Updated'].str.replace('January','Jan')
@@ -102,12 +105,12 @@ def data_wrangling():
     cursor = conn.cursor()
     query = "Select * from reviews"
     results = pd.read_sql_query(query,conn)
-    results.to_csv('F:\\Python Class\\Project\\review.csv',index=False)
+    results.to_csv(file_add+'\\review.csv',index=False)
     conn.commit()
     conn.close()
 
     #Data wrangling of reviews
-    review=pd.read_csv('F:\\Python Class\\Project\\review.csv',encoding = "ISO-8859-1")
+    review=pd.read_csv(file_add+'\\review.csv',encoding = "ISO-8859-1")
 
     for i in range(200,240):
         review=review.drop([i],axis=0)
@@ -276,7 +279,7 @@ def insight1b():
     Button(screen5b, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1).place(x=1270, y=100)#, command=trends1
     Button(screen5b, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1a).place(x=1350, y=100)#, command=trends1
            
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\review.png")
+    photo1 = PhotoImage(file=file_add+"\\review.png")
     label = Label(screen5b,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -415,7 +418,7 @@ def insight1a():
     Button(screen5a, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1).place(x=1270, y=100)#, command=trends1
     Button(screen5a, text='PAGE 3', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1b).place(x=1435, y=100)#, command=trends1
            
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\review.png")
+    photo1 = PhotoImage(file=file_add+"\\review.png")
     label = Label(screen5a,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -567,7 +570,7 @@ def insight1():
     Button(screen5, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1a).place(x=1350, y=100)#, command=trends1
     Button(screen5, text='PAGE 3', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1b).place(x=1435, y=100)#, command=trends1
       
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\review.png")
+    photo1 = PhotoImage(file=file_add+"\\review.png")
     label = Label(screen5,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -644,7 +647,7 @@ def downloads_n_ratings(noi,rt,x2,y2):
     if(noi=="" or rt==""):
          Label(screen4a, text="Please fill all details",font=(body_font, 11, 'bold'), fg='red', bg=bgcolor_middle,width=24,anchor=W,).place(x=x2+550,y=y2+70)
          return
-    if(re.match("^\d+(\.\d{0,1})?$",rt) and int(rt)>=0 and int(rt)<=5):
+    if(re.match("^\d+(\.\d{0,1})?$",rt) and float(rt)>=0 and float(rt)<=5):
         if(re.match("^[0-9]*$",noi)):
             rt = float(rt)
             for index,row in apps.iterrows():
@@ -746,7 +749,7 @@ def insight2a():
     Button(screen4a, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4a.destroy).place(x=1380, y=55)
     Label(screen4a, text="PAGE 2",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1430,y=100)
     Button(screen4a, text='PAGE 1', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight2).place(x=1350, y=100)#, command=trends1
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
+    photo1 = PhotoImage(file=file_add+"\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen4a,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
     
@@ -998,7 +1001,7 @@ def insight2():
     Button(screen4, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen4.destroy).place(x=1380, y=55)
     Label(screen4, text="PAGE 1",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1350,y=100)
     Button(screen4, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight2a).place(x=1430, y=100)#, command=trends1
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
+    photo1 = PhotoImage(file=file_add+"\\trend.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen4,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
     
@@ -1098,7 +1101,9 @@ def fetch_downloads(ran,x2,y2):
     Label(screen3, text=installs,font=(body_font, 15, 'bold'), fg=text_color,width=20, bg=bgcolor_middle).place(x=x2+310,y=y2+220)
         
 
-def highest_rating():  
+def highest_rating(x4,y4): 
+    
+    today = str(date.today())
     rating_sum=[]
     for i in category:
         sum=0
@@ -1113,8 +1118,26 @@ def highest_rating():
         
     highest_value = max(rating_sum)
     index = rating_sum.index(highest_value)
-    return category[index] 
-                     
+    high_rating = category[index]
+
+    Label(screen3, text="Highest Rating",font=(body_font, 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x4+240,y=y4+10)
+    Label(screen3, text="Category with highest rating as on "+today+" is\n"+high_rating,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle,anchor=W).place(x=x4+20,y=y4+100)
+    
+ 
+def most_avg_least_category(x3,y3):
+    
+    today = str(date.today())
+    max_cat_download=category[installs_sum.index(max(installs_sum))]
+    min_cat_download=category[installs_sum.index(min(installs_sum))]
+    
+    avg_number_of_installs = float(sum(installs_sum)/len(installs_sum))
+    num_in_installs_sum_list = min(installs_sum,key=lambda x:abs(x-avg_number_of_installs))#gives me the closest number to avg in the installs_sum list
+    avg_cat_download=category[installs_sum.index(num_in_installs_sum_list)]
+    
+    Label(screen3, text=max_cat_download+" Category has the MOST number of downloads\n as on "+today,font=(body_font, 15, 'bold'), fg='green', bg=bgcolor_middle,anchor=W).place(x=x3+20,y=y3+20)
+    Label(screen3, text=avg_cat_download+" Category has AVERAGE number of downloads\n as on "+today,font=(body_font, 15, 'bold'), fg='yellow', bg=bgcolor_middle,anchor=W).place(x=x3+20,y=y3+100)
+    Label(screen3, text=min_cat_download+" Category has the LEAST number of downloads\n as on "+today,font=(body_font, 15, 'bold'), fg='red', bg=bgcolor_middle,anchor=W).place(x=x3+20,y=y3+180)
+                        
 def stats():
     global screen3,cat,ran
     
@@ -1124,11 +1147,10 @@ def stats():
     screen3.title("STATISTICS")
     adjustWindow(screen3)    
     
-    
     Label(screen3, text="", width='500', height="20", bg=color1).pack() 
     Label(screen3, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=475,y=10)
     Button(screen3, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen3.destroy).place(x=1380, y=55)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\stats.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
+    photo1 = PhotoImage(file=file_add+"\\stats.png") # opening left side image - Note: If image is in same folder then no need to mention the full path
     label = Label(screen3,borderwidth=0, image=photo1) # attaching image to the label
     label.place(x=0, y=152)
     
@@ -1160,26 +1182,16 @@ def stats():
     #Section 3
     x3=60# Change these parameters 
     y3=500# to shift the whole below section
-    today = str(date.today())
-    max_cat_download=category[installs_sum.index(max(installs_sum))]
-    min_cat_download=category[installs_sum.index(min(installs_sum))]
-    
-    avg_number_of_installs = float(sum(installs_sum)/len(installs_sum))
-    num_in_installs_sum_list = min(installs_sum,key=lambda x:abs(x-avg_number_of_installs))#gives me the closest number to avg in the installs_sum list
-    avg_cat_download=category[installs_sum.index(num_in_installs_sum_list)]
-    
-    Label(screen3, text="", width=95, height=18, bg=bgcolor_middle).place(x=x3,y=y3)
-    Label(screen3, text=max_cat_download+" Category has the MOST number of downloads\n as on "+today,font=(body_font, 15, 'bold'), fg='green', bg=bgcolor_middle,anchor=W).place(x=x3+20,y=y3+20)
-    Label(screen3, text=avg_cat_download+" Category has AVERAGE number of downloads\n as on "+today,font=(body_font, 15, 'bold'), fg='yellow', bg=bgcolor_middle,anchor=W).place(x=x3+20,y=y3+100)
-    Label(screen3, text=min_cat_download+" Category has the LEAST number of downloads\n as on "+today,font=(body_font, 15, 'bold'), fg='red', bg=bgcolor_middle,anchor=W).place(x=x3+20,y=y3+180)
-    
+    Label(screen3, text="", width=95, height=18, bg=bgcolor_middle).place(x=x3,y=y3) 
+    Button(screen3, text="LOAD DATA", bg="#e79700", width=10, font=(body_font, 10, 'bold'), fg=text_color, command=lambda : most_avg_least_category(x3,y3)).place(x=x3+20,y=y3+20)
+ 
     #Section 4
-    high_rating = highest_rating()
     x4=800# Change these parameters 
     y4=500# to shift the whole below section
+    
     Label(screen3, text="", width=95, height=18, bg=bgcolor_middle).place(x=x4,y=y4)
-    Label(screen3, text="Highest Rating",font=(body_font, 20, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x4+240,y=y4+10)
-    Label(screen3, text="Category with highest rating as on "+today+" is\n"+high_rating,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle,anchor=W).place(x=x4+20,y=y4+100)
+    Button(screen3, text="LOAD DATA", bg="#e79700", width=10, font=(body_font, 10, 'bold'), fg=text_color, command=lambda : highest_rating(x4,y4)).place(x=x4+240,y=y4+10)
+
     screen3.mainloop()
 
 #STATS SECTION ENDS HERE-------------------------------------------------
@@ -1200,7 +1212,7 @@ def register_user(x1,y1):
     if fullname.get() and email.get() and password.get() and repassword.get() and gender.get() and phoneno.get() : # checking for all empty values in entry field
         if tnc.get(): # checking for acceptance of agreement
             if re.match("^((\+)?(\d{2}[-]))?(\d{10}){1}?$",phoneno.get()):
-                if re.match("^.+@(\[?)[a-zA-Z0-9-.]+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$", email.get()): # validating the email
+                if re.match("^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$", email.get()): # validating the email
                     if password.get() == repassword.get() and re.match("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",password.get()): # checking both password match or not
                         # if u enter in this block everything is fine just enter the values in database
                         gender_value = 'male'
@@ -1250,7 +1262,7 @@ def register():
     Label(screen1, text="", width='500', height="20", bg=color1).pack() 
     Label(screen1, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
     Button(screen1, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen1.destroy).place(x=1380, y=55)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\welcome.png") 
+    photo1 = PhotoImage(file=file_add+"\\welcome.png") 
     label = Label(screen1,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -1343,7 +1355,7 @@ def add_review():
     Label(screen2b, text="", width='500', height="20", bg=color1).pack() 
     Label(screen2b, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
     Button(screen2b, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen2b.destroy).place(x=1380, y=55)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png") 
+    photo1 = PhotoImage(file=file_add+"\\home.png") 
     label = Label(screen2b,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -1366,7 +1378,7 @@ def add_review():
     Button(screen2b, text='Submit', width=20, font=(body_font, 18, 'bold'), bg='#FF4040', fg=text_color,command=lambda : insert_review(e,x1,y1)).place(x=x1+200, y=y1+200)
     screen2b.mainloop()
 
-def insert_app(entries,x1,y1):
+def insert_app(entries,x1,y1,temp):
     entry=[]
     for e in entries:
         entry.append(str(e.get()))
@@ -1391,15 +1403,25 @@ def insert_app(entries,x1,y1):
     androidversion=entry[12]
     
     #Check duplicate entry
-    connection = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")
-    cursor = connection.cursor()
-    query = "SELECT * FROM apps WHERE App='"+appname+"'"
-    lst=cursor.execute(query)
-    connection.commit()
-    connection.close()
-    if lst:
-        Label(screen2a, text="App Already Exists", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
-        return
+    if temp==0:
+        connection = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")
+        cursor = connection.cursor()
+        query = "SELECT * FROM apps WHERE App='"+appname+"'"
+        lst=cursor.execute(query)
+        connection.commit()
+        connection.close()
+        if lst:
+            Label(screen2a, text="App Already Exists", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
+            return
+    else:
+        connection = pymysql.connect(host="localhost", user="root", passwd="", database="8bitstore")
+        cursor = connection.cursor()
+        query = "DELETE FROM apps WHERE App='"+appname+"'"
+        cursor.execute(query)
+        connection.commit()
+        connection.close()
+        
+    
     
     if categoryname == "--select the category--": 
         Label(screen2a, text="Please select category", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
@@ -1420,10 +1442,10 @@ def insert_app(entries,x1,y1):
         Label(screen2a, text="Please select android version", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
         return
     else:
-        if(re.match("^\d+(\.\d{0,1})?$",rating) and int(rt)>=0 and int(rt)<=5):
+        if(re.match("^\d(\.\d{0,1})?$",rating) and float(rating)>=0 and float(rating)<=5):
             if(re.match("^[0-9]*$",reviews)):
                 if(re.match("[0-9]+(\.[0-9]?)?M",size)):
-                    if(re.match("^[0-9]*$",price)):
+                    if(re.match("^\d+(\.\d{0,2})?$",price)):
                         if(typ=='Free' and price>'0'):
                              Label(screen2a, text="Please select proper type", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
                              return    
@@ -1450,7 +1472,7 @@ def insert_app(entries,x1,y1):
                                 if(month=='April' or month=='June' or month=='September'
                                    or month=='November'):
                                     no_days=30
-                                if(1<day<no_days):
+                                if(1<=day<no_days):
                                     if(re.match("^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)$",currentversion)):
                                         if(currentversion=='0'):
                                             currentversion='Varies with device'
@@ -1487,7 +1509,7 @@ def insert_app(entries,x1,y1):
             Label(screen2a, text="Please enter valid rating", fg="red",font=(title_font, 16,'bold'), width='30', anchor=W, bg=bgcolor_middle).place(x=x1+850, y=y1+450)
             return    
                                     
-def add_app(apprecord):
+def add_app(apprecord,temp):
     global screen2a
     
     screen2a = Toplevel(screen2)
@@ -1504,7 +1526,7 @@ def add_app(apprecord):
     Label(screen2a, text="", width='500', height="20", bg=color1).pack() 
     Label(screen2a, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
     Button(screen2a, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen2a.destroy).place(x=1380, y=55)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png") 
+    photo1 = PhotoImage(file=file_add+"\\home.png") 
     label = Label(screen2a,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -1574,7 +1596,7 @@ def add_app(apprecord):
         Label(screen2a, text="Price : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+75, y=y1+480)
         e[7]=Entry(screen2a,font=('Open Sans',12),width=22)
         e[7].place(x=x1+275, y=y1+485)
-        Label(screen2a, text="Eg : 100 (in rupees)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+510)
+        Label(screen2a, text="Eg : 100 (in dollars)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+275, y=y1+510)
         e[7].insert(0,i[7])
         
         Label(screen2a, text="Content Rating : ", font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+675, y=y1+60)
@@ -1626,7 +1648,7 @@ def add_app(apprecord):
         Label(screen2a, text="(Note: Select minimum required version)", font=(body_font, 11,'bold'), fg=text_color, bg=bgcolor_middle, anchor=W).place(x=x1+875, y=y1+340)
         break
             
-    Button(screen2a, text='Submit', width=20, font=(body_font, 18, 'bold'), bg='#FF4040', fg=text_color,command=lambda : insert_app(e,x1,y1)).place(x=x1+800, y=y1+380)
+    Button(screen2a, text='Submit', width=20, font=(body_font, 18, 'bold'), bg='#FF4040', fg=text_color,command=lambda : insert_app(e,x1,y1,temp)).place(x=x1+800, y=y1+380)
     screen2a.mainloop()
 
 def delete_app(appname,x2,y2):
@@ -1648,27 +1670,30 @@ def search(x2,y2,search_item):
     conn.close() # closing the connection of the database
     
     if(len(apprecord)==0):
+        Label(screen2, width=100, height=23, bg=bgcolor_middle).place(x=x2,y=y2+40)
+        Label(screen2, width=70, height=10, bg=bgcolor_middle).place(x=x2+200,y=y2)
+
         Label(screen2, text="App doesnt not exist",font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+50)
         return
     
     for i in apprecord:
-            Label(screen2, text="App Name : "+i[0],font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+50)    
-            Label(screen2, text="Category Name : "+i[1],font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+90)
-            Label(screen2, text="Rating : "+i[2],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+130)  
-            Label(screen2, text="Reviews : "+i[3],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+170)
-            Label(screen2, text="Size : "+i[4],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+210)
-            Label(screen2, text="Installs : "+i[5],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+250)
-            Label(screen2, text="Type : "+i[6],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+290)
-            Label(screen2, text="Price : "+i[7],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+330)
-            Label(screen2, text="Content Rating : "+i[8],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=30,anchor=W).place(x=x2+300,y=y2+130)
-            Label(screen2, text="Genres : "+i[9],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+170)
-            Label(screen2, text="Last Updated : "+i[10],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=30,anchor=W).place(x=x2+300,y=y2+210)
-            Label(screen2, text="Current Version : "+i[11],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+250)
-            Label(screen2, text="Android Version : "+i[12],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+290)
-            Button(screen2, text='Delete', width=12, font=(body_font, 13, 'bold'), bg='#FF4040', fg=text_color,command=lambda : delete_app(i[0],x2,y2)).place(x=x2+350, y=y2+20)
-            Button(screen2, text='Update', width=12, font=(body_font, 13, 'bold'), bg='#e79700', fg=text_color,command=lambda : add_app(apprecord)).place(x=x2+550, y=y2+20)
+        Label(screen2, text="App Name : "+i[0],font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+50)    
+        Label(screen2, text="Category Name : "+i[1],font=(title_font, 17, 'bold'), fg=text_color, bg=bgcolor_middle,width=50,anchor=W).place(x=x2+20,y=y2+90)
+        Label(screen2, text="Rating : "+i[2],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+130)  
+        Label(screen2, text="Reviews : "+i[3],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+170)
+        Label(screen2, text="Size : "+i[4],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+210)
+        Label(screen2, text="Installs : "+i[5],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+250)
+        Label(screen2, text="Type : "+i[6],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+290)
+        Label(screen2, text="Price : "+i[7],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=25,anchor=W).place(x=x2+20,y=y2+330)
+        Label(screen2, text="Content Rating : "+i[8],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=30,anchor=W).place(x=x2+300,y=y2+130)
+        Label(screen2, text="Genres : "+i[9],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+170)
+        Label(screen2, text="Last Updated : "+i[10],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=30,anchor=W).place(x=x2+300,y=y2+210)
+        Label(screen2, text="Current Version : "+i[11],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+250)
+        Label(screen2, text="Android Version : "+i[12],font=(title_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle,width=35,anchor=W).place(x=x2+300,y=y2+290)
+        Button(screen2, text='Delete', width=12, font=(body_font, 13, 'bold'), bg='#FF4040', fg=text_color,command=lambda : delete_app(i[0],x2,y2)).place(x=x2+350, y=y2+20)
+        Button(screen2, text='Update', width=12, font=(body_font, 13, 'bold'), bg='#e79700', fg=text_color,command=lambda : add_app(apprecord,1)).place(x=x2+550, y=y2+20)
 
-            break#Incase of multiple values it will only show the details of the first value
+        break#Incase of multiple values it will only show the details of the first value
      
 
 def compareCategory(cat,xx,yy):
@@ -1740,7 +1765,7 @@ def compare_Category():
     Label(screen2c, text="", width='500', height="20", bg=color1).pack() 
     Label(screen2c, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
     Button(screen2c, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen2c.destroy).place(x=1380, y=55)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png") 
+    photo1 = PhotoImage(file=file_add+"\\home.png") 
     label = Label(screen2c,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     
@@ -1778,7 +1803,7 @@ def home_page(user):
     Label(screen2, text="Welcome "+user[0][1],font=(title_font, 15, 'bold'), fg=text_color, bg=color1).place(x= 1350 , y= 30 )
     Button(screen2, text='Logout', width=7, font=(body_font, 11, 'bold'), bg=color3, fg=text_color, command=screen2.destroy).place(x=1385, y=65)
     Button(screen2, text="Add a new login", bg="#e79700", width=12, height=1, font=(body_font, 11, 'bold'), fg=text_color, command=register).place(x=1360,y=105)
-    photo1 = PhotoImage(file="F:\\Python Class\\Project\\home.png")
+    photo1 = PhotoImage(file=file_add+"\\home.png")
     label = Label(screen2,borderwidth=0, image=photo1)
     label.place(x=0, y=152)
     Button(screen2, text='Insight 1', width=15, font=(body_font, 23, 'bold'), bg=color3, fg=text_color,command=insight1).place(x=130, y=200)
@@ -1803,7 +1828,7 @@ def home_page(user):
             apprecord[i].append("")#for passing a parameter to add_app function
             
     Button(screen2, text='Search', width=12, font=(body_font, 13, 'bold'), bg="#FF4040", fg=text_color,command=lambda : search(x2,y2,e1.get())).place(x=x1+170, y=y1+100)
-    Button(screen2, text='Add App', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=lambda : add_app(apprecord)).place(x=x1+50, y=y1+200)
+    Button(screen2, text='Add App', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=lambda : add_app(apprecord,0)).place(x=x1+50, y=y1+200)
     Button(screen2, text='Add Review', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=add_review).place(x=x1+250, y=y1+200)
     Button(screen2, text='Compare Category', width=15, font=(body_font, 15, 'bold'), bg=color3, fg=text_color,command=compare_Category).place(x=x1+160, y=y1+250)
 
@@ -1841,7 +1866,7 @@ def main_screen():
     Label(screen, text="", width="500", height="20", bg=color1).pack()
     Label(screen, text="8-BIT ANALYSIS", font=(title_font, 70, 'bold'), fg='white', bg=color1).place(x=475,y=10)
     
-    photo = PhotoImage(file="F:\\Python Class\\Project\\welcome.png")
+    photo = PhotoImage(file=file_add+"\\welcome.png")
     label = Label(screen,borderwidth=0, image=photo)
     label.place(x=0, y=152)
     
