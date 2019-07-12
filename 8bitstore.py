@@ -234,7 +234,7 @@ def yearly_avg_download_month(x1,y1):
     yearly_counter=[0,0,0,0,0,0,0,0,0,0,0,0]
 
     year_no=all_years[0]
-    yy=40
+    yy=80
     for i in range(9):
         yearly_installs=[0,0,0,0,0,0,0,0,0,0,0,0]
         yearly_counter=[0,0,0,0,0,0,0,0,0,0,0,0]
@@ -257,8 +257,8 @@ def yearly_avg_download_month(x1,y1):
         max_index = yearly_installs.index(max_value)
         Label(screen5b, text=year_no,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+40,y=y1+yy)
         Label(screen5b, text=all_month[max_index],font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+200,y=y1+yy)
-        Label(screen5b, text=max_value,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+420,y=y1+yy)
-        yy+=60
+        Label(screen5b, text=max_value,font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+440,y=y1+yy)
+        yy+=50
         year_no+=1
 
 def insight1b():
@@ -289,7 +289,7 @@ def insight1b():
     y1=170
     Label(screen5b, width=100, height=38, bg=bgcolor_middle).place(x=x1,y=y1)
     Label(screen5b, text="YEAR",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+40,y=y1+10)
-    Label(screen5b, text="MONTH",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+210,y=y1+10)
+    Label(screen5b, text="MONTH \n(most downloads)",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+170,y=y1+10)
     Label(screen5b, text="AVERAGE DOWNLOADS",font=(body_font, 18, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x1+410,y=y1+10)
     yearly_avg_download_month(x1,y1)
     
@@ -567,7 +567,7 @@ def insight1():
     Label(screen5, text="8-BIT ANALYSIS",font=(title_font, 70, 'bold'), fg=text_color, bg=color1).place(x=455,y=10)
     Button(screen5, text='BACK', width=8, font=(body_font, 13, 'bold'), bg=color3, fg=text_color, command=screen5.destroy).place(x=1380, y=55)
     Label(screen5, text="PAGE 1",font=(body_font, 14, 'bold'), fg=text_color, bg='#e79700').place(x=1270,y=100)
-    Button(screen5, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1a).place(x=1350, y=100)#, command=trends1
+    Button(screen5, text='PAGE 2', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1a).place(x=1360, y=100)#, command=trends1
     Button(screen5, text='PAGE 3', width=6, font=(body_font, 12, 'bold'), bg='#e79700', fg=text_color,command=insight1b).place(x=1435, y=100)#, command=trends1
       
     photo1 = PhotoImage(file=file_add+"\\review.png")
