@@ -174,7 +174,7 @@ def initialise():
     
     i=0
     while(i<len(category)):
-        cat_inst[category[i]]=installs_sum[i]
+        cat_inst[category[i]]=(installs_sum[i]/total_sum)*100
         i=i+1
 
 #INSIGHTS1 SECTION STARTS HERE---------------------------------------------------
@@ -207,11 +207,24 @@ def get_num_reviews_of_app(app_name,sentiment_selected,x2,y2):
     revi=x['Translated_Review'].tolist() 
     senti = x['Sentiment'].tolist()
 
-    
     sen_reviews =[]
+    pos_sen_reviews =[]
+    neg_sen_reviews =[]
+    neu_sen_reviews =[]
     for i in range(len(senti)):
-        if senti[i] ==sentiment_selected:
-            sen_reviews.append(revi[i])
+        if senti[i] =='Positive':
+            pos_sen_reviews.append(revi[i])
+        elif senti[i] =='Neutral':
+            neu_sen_reviews.append(revi[i])
+        elif senti[i] =='Negative':
+            neg_sen_reviews.append(revi[i])
+            
+    if sentiment_selected=='Positive':
+        sen_reviews = pos_sen_reviews
+    elif sentiment_selected =='Negative':
+        sen_reviews = neg_sen_reviews
+    else:
+        sen_reviews = neu_sen_reviews
             
     count=len(sen_reviews)
     number=[]
@@ -222,8 +235,10 @@ def get_num_reviews_of_app(app_name,sentiment_selected,x2,y2):
     droplist = OptionMenu(screen5b, rev, *number,command=lambda x : display_review(rev,sen_reviews,x2,y2))
     droplist.config(font=(body_font,11),width=35)
     rev.set('--Select Review Number--')
-    droplist.place(x=x2+200, y=y2+80)    
-          
+    droplist.place(x=x2+200, y=y2+80)  
+    
+    Label(screen5b, text="Number of Sentiments (Positive,Negative,Neutral):\n({0},{1},{2})".format(len(pos_sen_reviews),len(neg_sen_reviews),len(neu_sen_reviews)),font=(body_font, 15, 'bold'), fg=text_color, bg=bgcolor_middle).place(x=x2+100,y=y2+120)
+      
 def yearly_avg_download_month(x1,y1):
     
     all_years=[2010,2011,2012,2013,2014,2015,2016,2017,2018]
@@ -264,7 +279,7 @@ def yearly_avg_download_month(x1,y1):
 def insight1b():
     global screen5b
     
-    screen5b = Toplevel(screen5)
+    screen5b = Toplevel(screen)
     ap=StringVar()
     se=StringVar()
     
@@ -405,7 +420,7 @@ def sentiment_ratio(req,x2,y2):
 def insight1a():
     global screen5a
     
-    screen5a = Toplevel(screen5)
+    screen5a = Toplevel(screen)
     req=StringVar()
     
     screen5a.title("INSIGHT 1")
@@ -1064,7 +1079,7 @@ def fetch_installs(cat,x1,y1):
         for i in cat_inst:
             if(i==cat):
                 Label(screen3, text=i,font=(body_font, 15, 'bold'), fg=text_color,anchor=W,width=20, bg=bgcolor_middle).place(x=x1+60,y=y1+220)
-                Label(screen3, text=cat_inst[i],font=(body_font, 15, 'bold'), fg=text_color,anchor=W,width=20, bg=bgcolor_middle).place(x=x1+310,y=y1+220)
+                Label(screen3, text=str(round(cat_inst[i],2))+"%",font=(body_font, 15, 'bold'), fg=text_color,anchor=W,width=20, bg=bgcolor_middle).place(x=x1+320,y=y1+220)
                 
 def fetch_downloads(ran,x2,y2):
     global range1,range2,range3,range4,range5
